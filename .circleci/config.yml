@@ -1,0 +1,19 @@
+version: 2
+jobs:
+    build:
+        docker:
+            - image: gcc:latest
+        steps:
+            - checkout
+            - run:
+                name: Setup
+                command: |
+                    apt-get update && apt-get install -y cmake
+            - run:
+                name: Build
+                command: |
+                    cmake -S . -B build && cmake --build build
+            - run:
+                name: Run
+                command: |
+                    cd build && ctest 

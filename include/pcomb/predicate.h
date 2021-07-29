@@ -8,35 +8,36 @@
 #include "pcomb/stream.h"
 
 namespace pcomb {
-    template <typename CharType>
-    class PredicateParser : public Parser<CharType, CharType> {
+    template <typename T>
+    class PredicateParser : public Parser<T, T> {
     public:
-        using StreamType = typename Parser<CharType, CharType>::StreamType;
-        using ResultType = typename Parser<CharType, CharType>::ResultType;
+        using CharType = typename Parser<T, T>::CharType;
+        using ValueType = typename Parser<T, T>::ValueType;
 
         using PredicateType = std::function<bool(const CharType&)>;
 
-        explicit PredicateParser(const PredicateType& predicate)
-                : predicate_(predicate) {
+        explicit PredicateParser(PredicateType&& predicate)
+                : predicate_(std::forward<PredicateType>(predicate)) {
 
         }
 
-        ResultType parse(StreamType* stream) const override {
+        Result<ValueType> parse(IStream<CharType>* stream) const override {
             if (stream->empty()) {
-                return ResultType(0);
+                return Result<ValueType>();
             }
 
-            CharType ch = stream->head();
+            CharType ch(stream->head());
             if (predicate_(ch)) {
                 stream->consume(1);
-                return ResultType(1, ch);
+                return Result<ValueType>(1, ch);
             } else {
-                return ResultType(0);
+                return Result<ValueType>();
             }
         }
 
     private:
         PredicateType predicate_;
     };
-}
-#endif
+
+}  // namespace pcomb
+#endif  // PCOMB_PREDICATE_H

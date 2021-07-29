@@ -5,15 +5,15 @@
 #include "pcomb/stream.h"
 
 namespace pcomb {
-    template <typename CharType, typename ValueType>
+    template <typename C, typename V>
     class Parser {
     public:
-        using StreamType = IStream<CharType>;
-        using ResultType = Result<ValueType>;
+        using CharType = C;
+        using ValueType = V;
 
         virtual ~Parser() = default;
 
-        virtual ResultType parse(StreamType* stream) const = 0;
+        virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
     };
 
 }  // namespace pcomb

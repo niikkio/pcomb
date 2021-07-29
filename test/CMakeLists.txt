@@ -13,6 +13,7 @@ file(GLOB TEST_SOURCE_FILES "*.cc")
 add_executable(core_test ${TEST_SOURCE_FILES})
 
 target_link_libraries(core_test PRIVATE gtest_main
+                                PRIVATE gmock_main
                                 PRIVATE pcomb)
 
 

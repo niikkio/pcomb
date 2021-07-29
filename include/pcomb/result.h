@@ -7,9 +7,8 @@ namespace pcomb {
     template <typename ValueType>
     class Result {
     public:
-        explicit Result(int consumed)
-                : storage_(std::nullopt)
-                , consumed_(consumed) {
+        Result() : storage_(std::nullopt), consumed_(0) {
+
         }
 
         template <typename T>
@@ -23,11 +22,15 @@ namespace pcomb {
             return storage_.has_value();
         }
 
-        const ValueType& get_value() const {
+        const ValueType& get_value() const& {
             return storage_.value();
         }
 
-        int get_consumed() const {
+        ValueType&& get_value() && {
+            return std::move(storage_.value());
+        }
+
+        int get_consumed_number() const {
             return consumed_;
         }
 

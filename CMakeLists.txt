@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 project(pcomb VERSION 0.0.1 DESCRIPTION "C++ Combinatory Parsing")
 set(CMAKE_CXX_STANDARD 17)
 
-set(Boost_INCLUDE_DIR /usr/local/src/boost_1_76_0)
-set(Boost_LIBRARY_DIR /usr/local/src/boost_1_76_0/libs)
+
+# set Boost_INCLUDE_DIR and Boost_LIBRARY_DIR for local build
+include(CMakeLists.txt.in OPTIONAL)
 find_package(Boost REQUIRED)
 
 set(PCOMB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/pcomb")

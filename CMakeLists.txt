@@ -2,20 +2,24 @@ cmake_minimum_required(VERSION 3.14)
 project(pcomb VERSION 0.0.1 DESCRIPTION "C++ Combinatory Parsing")
 set(CMAKE_CXX_STANDARD 17)
 
-message("${CMAKE_CURRENT_SOURCE_DIR}")
+set(Boost_INCLUDE_DIR /usr/local/src/boost_1_76_0)
+set(Boost_LIBRARY_DIR /usr/local/src/boost_1_76_0/libs)
+find_package(Boost REQUIRED)
 
 set(PCOMB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/pcomb")
-set(PCOMB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/pcomb")
 
-file(GLOB PCOMB_SOURCE_FILES "${PCOMB_SOURCE_DIR}/*.cc")
+add_library(pcomb SHARED
+    ${PCOMB_SOURCE_DIR}/mock_stream.cc
+)
 
-add_library(pcomb SHARED ${PCOMB_SOURCE_FILES})
 set_target_properties(pcomb PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 target_include_directories(pcomb PRIVATE ${PCOMB_SOURCE_DIR}
-                                 PRIVATE ${PCOMB_INCLUDE_DIR}
-                                 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                                 PUBLIC ${Boost_INCLUDE_DIR}
+                                 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(pcomb PRIVATE ${Boost_LIBRARIES})
 
 enable_testing()
 add_subdirectory(test)

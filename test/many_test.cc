@@ -22,22 +22,22 @@ protected:
 
 TEST_F(ManyParserTest, ManyEmpty) {
     TestContainerParserSuccess("", many,
-            Expected{}, CheckEmpty());
+            Expected{}, CheckEmpty(), 0);
 }
 
 TEST_F(ManyParserTest, ManyNoOne) {
     TestContainerParserSuccess("BBB", many,
-            Expected{}, CheckNotEmpty('B'));
+            Expected{}, CheckNotEmpty('B'), 0);
 }
 
 TEST_F(ManyParserTest, ManySome) {
     TestContainerParserSuccess("AAAB", many,
-            Expected{'A','A','A'}, CheckNotEmpty('B'));
+            Expected{'A','A','A'}, CheckNotEmpty('B'), 3);
 }
 
 TEST_F(ManyParserTest, ManyAll) {
     TestContainerParserSuccess("AAAAA", many,
-            Expected{'A','A','A','A','A'}, CheckEmpty());
+            Expected{'A','A','A','A','A'}, CheckEmpty(), 5);
 }
 
 TEST_F(ManyParserTest, SomeEmpty) {
@@ -50,17 +50,17 @@ TEST_F(ManyParserTest, SomeNoOne) {
 
 TEST_F(ManyParserTest, SomeOne) {
     TestContainerParserSuccess("AB", some,
-            Expected{'A'}, CheckNotEmpty('B'));
+            Expected{'A'}, CheckNotEmpty('B'), 1);
 }
 
 TEST_F(ManyParserTest, SomeSome) {
     TestContainerParserSuccess("AAAB", some,
-            Expected{'A','A','A'}, CheckNotEmpty('B'));
+            Expected{'A','A','A'}, CheckNotEmpty('B'), 3);
 }
 
 TEST_F(ManyParserTest, SomeAll) {
     TestContainerParserSuccess("AAAAA", some,
-            Expected{'A','A','A','A','A'}, CheckEmpty());
+            Expected{'A','A','A','A','A'}, CheckEmpty(), 5);
 }
 
 TEST_F(ManyParserTest, RepeatEmpty) {
@@ -81,10 +81,10 @@ TEST_F(ManyParserTest, RepeatNotEnough2) {
 
 TEST_F(ManyParserTest, RepeatEnough) {
     TestContainerParserSuccess("AAA", exact3,
-            Expected{'A','A','A'}, CheckEmpty());
+            Expected{'A','A','A'}, CheckEmpty(), 3);
 }
 
 TEST_F(ManyParserTest, RepeatMore) {
     TestContainerParserSuccess("AAAA", exact3,
-            Expected{'A','A','A'}, CheckNotEmpty('A'));
+            Expected{'A','A','A'}, CheckNotEmpty('A'), 3);
 }

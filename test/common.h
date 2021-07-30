@@ -25,11 +25,12 @@ inline StreamCheck CheckNotEmpty(char head) {
 
 template <typename Parser, typename Expected>
 inline void TestContainerParserSuccess(std::string input, const Parser& parser,
-        const Expected& expected, const StreamCheck& check) {
+        const Expected& expected, const StreamCheck& check, int expected_consumed_number) {
     pcomb::MockStream s(std::move(input));
     auto res = parser.parse(&s);
     EXPECT_TRUE(res.success());
-    EXPECT_EQ(res.get_consumed_number(), expected.size());
+    EXPECT_EQ(res.get_consumed_number(), expected_consumed_number);
+    EXPECT_THAT(res.get_value().size(), expected.size());
     EXPECT_THAT(res.get_value(), ::testing::ContainerEq(expected));
 
     check(s);

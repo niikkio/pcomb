@@ -17,6 +17,8 @@ target_link_libraries(core_test PRIVATE gtest_main
                                 PRIVATE pcomb)
 
 
+target_include_directories(core_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}) 
+
 set_target_properties(core_test PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 

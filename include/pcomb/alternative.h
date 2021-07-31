@@ -10,47 +10,46 @@
 #include "pcomb/stream.h"
 
 namespace pcomb {
-    template <typename P, typename... Parsers>
-    struct AlternativeTypes {
-        using CharType = std::enable_if_t<
-                                         std::conjunction_v<
-                                                           std::is_same<
-                                                                       typename P::CharType,
-                                                                       typename Parsers::CharType
-                                                                       >...
-                                                           >,
-                                         typename P::CharType
-                                         >;
+    template <typename P1, typename... PS>
+    using AlternativeBaseType = Parser<
+            std::enable_if_t<
+                std::conjunction_v<
+                    std::is_same<typename P1::CharType,
+                                 typename PS::CharType>...>,
+                    typename P1::CharType>,
+            std::variant<typename P1::ValueType,
+                         typename PS::ValueType...>>;
 
-        using ValueType = typename std::variant<
-            typename P::ValueType, typename Parsers::ValueType...>;
-    };
-
-    template <typename ...Parsers>
-    class AlternativeParser : public Parser<
-            typename AlternativeTypes<Parsers...>::CharType,
-            typename AlternativeTypes<Parsers...>::ValueType > {
+    template <typename P1, typename... PS>
+    class AlternativeParser : public AlternativeBaseType<P1, PS...> {
     public:
-        using CharType = typename AlternativeTypes<Parsers...>::CharType;
-        using ValueType = typename AlternativeTypes<Parsers...>::ValueType;
+        using CharType = typename AlternativeBaseType<P1, PS...>::CharType;
+        using ValueType = typename AlternativeBaseType<P1, PS...>::ValueType;
 
-        AlternativeParser(Parsers&... parsers) : parsers_(std::make_tuple(parsers...)) {
+    private:
+        using ResultType = Result<ValueType>;
+        using StreamType = IStream<CharType>;
+        using StorageType = std::tuple<P1, PS...>;
+        static constexpr size_t StorageSize = 1 + sizeof...(PS);
+
+    public:
+        explicit AlternativeParser(const P1& p1, const PS&... ps) : parsers_(std::make_tuple(p1, ps...)) {
 
         }
 
-        AlternativeParser(Parsers&&... parsers) : parsers_(std::forward_as_tuple(parsers...)) {
+        explicit AlternativeParser(P1&& p1, PS&&... ps) : parsers_(std::forward_as_tuple(p1, ps...)) {
 
         }
 
-        Result<ValueType> parse(IStream<CharType>* stream) const override {
-            return Alternative<std::tuple<Parsers...>, sizeof...(Parsers)>::parse(parsers_, stream);
+        ResultType parse(StreamType* stream) const override {
+            return Alternative<StorageSize>::parse(parsers_, stream);
         }
 
     private:
-        template <typename Tup, size_t I>
+        template <size_t I, bool Dummy = true>
         struct Alternative {
-            static Result<ValueType> parse(const Tup& parsers, IStream<CharType>* stream) {
-                auto prevResult = Alternative<Tup, I-1>::parse(parsers, stream);
+            static ResultType parse(const StorageType& parsers, StreamType* stream) {
+                auto prevResult = Alternative<I-1>::parse(parsers, stream);
                 if (prevResult.success()) {
                     return prevResult;
                 }
@@ -58,29 +57,29 @@ namespace pcomb {
                 auto result = std::get<I-1>(parsers).parse(stream);
                 if (result.success()) {
                     int consumed = result.get_consumed_number();
-                    return Result<ValueType>(consumed,
-                            ValueType(std::in_place_index<I-1>, std::move(result).get_value()));
+                    return ResultType(consumed, ValueType(std::in_place_index<I-1>,
+                                                          std::move(result).get_value()));
                 }
 
-                return Result<ValueType>();
+                return ResultType();
             }
         };
 
-        template <typename Tup>
-        struct Alternative<Tup, 1> {
-            static Result<ValueType> parse(const Tup& parsers, IStream<CharType>* stream) {
+        template <bool Dummy>
+        struct Alternative<1, Dummy> {
+            static ResultType parse(const StorageType& parsers, StreamType* stream) {
                 auto result = std::get<0>(parsers).parse(stream);
                 if (result.success()) {
                     int consumed = result.get_consumed_number();
-                    return Result<ValueType>(consumed,
-                            ValueType(std::in_place_index<0>, std::move(result).get_value()));
+                    return ResultType(consumed, ValueType(std::in_place_index<0>,
+                                                          std::move(result).get_value()));
                 }
 
-                return Result<ValueType>();
+                return ResultType();
             }
         };
 
-        std::tuple<Parsers...> parsers_;
+        StorageType parsers_;
     };
 
 }  // namespace pcomb

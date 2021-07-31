@@ -20,6 +20,7 @@ protected:
 
     using Stream = pcomb::MockStream;
 
+    using Expected1 = std::variant<char>;
     using Expected2 = std::variant<char, std::list<char> >;
     using Expected3 = std::variant<char, char, char>;
 
@@ -34,6 +35,14 @@ protected:
     A2 a2 = A2(pa, mb);
     A3 a3 = A3(pa, pb, pc);
 };
+
+TEST_F(AlternativeParserTest, SingleMatch) {
+    TestParserSuccess("A", a1, Expected1{std::in_place_index<0>, 'A'}, CheckEmpty(), 1);
+}
+
+TEST_F(AlternativeParserTest, SingleNotMatch) {
+    TestParserFail("B", a1);
+}
 
 TEST_F(AlternativeParserTest, Take1) {
     TestParserSuccess("ABC", a3, Expected3{std::in_place_index<0>, 'A'}, CheckNotEmpty('B'), 1);

@@ -9,33 +9,41 @@
 #include "pcomb/stream.h"
 
 namespace pcomb {
-    template <typename BaseParser>
-    class ManyParser : public Parser<
-                            typename BaseParser::CharType,
-                            std::list<typename BaseParser::ValueType> > {
-    public:
-        using CharType = typename BaseParser::CharType;
-        using ValueType = std::list<typename BaseParser::ValueType>;
+    template <typename P>
+    using ManyBaseType = Parser<
+                            typename P::CharType,
+                            std::list<typename P::ValueType>>;
 
-        explicit ManyParser(const BaseParser& parser, int min_count = 0, int max_count = -1)
+    template <typename P>
+    class ManyParser : public ManyBaseType<P> {
+    public:
+        using CharType = typename ManyBaseType<P>::CharType;
+        using ValueType = typename ManyBaseType<P>::ValueType;
+
+    private:
+        using ResultType = Result<ValueType>;
+        using StreamType = IStream<CharType>;
+
+    public:
+        explicit ManyParser(const P& parser, int min_count = 0, int max_count = -1)
                 : parser_(parser)
                 , min_count_(min_count)
                 , max_count_(max_count) {
-            // TODO: copy-constructors ???
+
         }
 
-        explicit ManyParser(BaseParser&& parser, int min_count = 0, int max_count = -1)
-                : parser_(std::forward<BaseParser>(parser))
+        explicit ManyParser(P&& parser, int min_count = 0, int max_count = -1)
+                : parser_(std::forward<P>(parser))
                 , min_count_(min_count)
                 , max_count_(max_count) {
 
         }
 
-        Result<ValueType> parse(IStream<CharType>* stream) const override {
+        ResultType parse(StreamType* stream) const override {
             int consumed_number = 0;
             auto values = ValueType();
 
-            auto stream_copy = std::unique_ptr<IStream<CharType> >(stream->clone());
+            auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
             while (max_count_ < 0 || values.size() < max_count_) {
                 auto result = parser_.parse(stream_copy.get());
@@ -50,14 +58,14 @@ namespace pcomb {
 
             if (values.size() >= min_count_) {
                 stream->consume(consumed_number);
-                return Result<ValueType>(consumed_number, std::move(values));
+                return ResultType(consumed_number, std::move(values));
             }
 
-            return Result<ValueType>();
+            return ResultType();
         }
 
     private:
-        BaseParser parser_;
+        P parser_;
         int min_count_;
         int max_count_;
     };

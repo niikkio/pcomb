@@ -1,5 +1,5 @@
-#ifndef PCOMB_PARSER_H
-#define PCOMB_PARSER_H
+#ifndef PCOMB_PARSER_H_
+#define PCOMB_PARSER_H_
 
 #include <type_traits>
 
@@ -7,23 +7,23 @@
 #include "pcomb/stream.h"
 
 namespace pcomb {
-    template <typename P1, typename...PS>
-    using CommonCharType = std::enable_if_t<
-                                std::conjunction_v<
-                                    std::is_same<typename P1::CharType,
-                                                 typename PS::CharType>...>,
-                                typename P1::CharType>;
 
-    template <typename C, typename V>
-    class Parser {
-    public:
-        using CharType = C;
-        using ValueType = V;
+template <typename P1, typename...PS>
+using CommonCharType = std::enable_if_t<
+    std::conjunction_v<std::is_same<typename P1::CharType,
+                                    typename PS::CharType>...>,
+    typename P1::CharType>;
 
-        virtual ~Parser() = default;
+template <typename C, typename V>
+class Parser {
+ public:
+  using CharType = C;
+  using ValueType = V;
 
-        virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
-    };
+  virtual ~Parser() = default;
+
+  virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
+};
 
 }  // namespace pcomb
-#endif  // PCOMB_PARSER_H
+#endif  // PCOMB_PARSER_H_

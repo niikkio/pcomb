@@ -5,20 +5,20 @@
 #include "pcomb/predicate.h"
 
 class PredicateParserTest : public ::testing::Test {
-protected:
-    using Ch = pcomb::PredicateParser<char>;
+ protected:
+  using Ch = pcomb::PredicateParser<char>;
 
-    Ch pa = Ch([](char c) { return c == 'A'; });
+  Ch pa = Ch([](char c) { return c == 'A'; });
 };
 
 TEST_F(PredicateParserTest, Empty) {
-    TestParserFail("", pa);
+  TestParserFail("", pa);
 }
 
 TEST_F(PredicateParserTest, HeadMatch) {
-    TestParserSuccess("AB", pa, 'A', CheckNotEmpty('B'), 1);
+  TestParserSuccess("AB", pa, 'A', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(PredicateParserTest, HeadNotMatch) {
-    TestParserFail("BA", pa);
+  TestParserFail("BA", pa);
 }

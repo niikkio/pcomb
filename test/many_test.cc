@@ -8,83 +8,86 @@
 #include "pcomb/predicate.h"
 
 class ManyParserTest : public ::testing::Test {
-protected:
-    using Ch = pcomb::PredicateParser<char>;
-    using Many = pcomb::ManyParser<Ch>;
-    using Expected = std::list<char>;
-    using Stream = pcomb::MockStream;
+ protected:
+  using Ch = pcomb::PredicateParser<char>;
+  using Many = pcomb::ManyParser<Ch>;
+  using Expected = std::list<char>;
+  using Stream = pcomb::MockStream;
 
-    Ch pa = Ch([](char c) { return c == 'A'; });
-    Many many = Many(pa);
-    Many some = Many(pa, 1);
-    Many exact3 = Many(pa, 3, 3);
+  Ch pa = Ch([](char c) { return c == 'A'; });
+  Many many = Many(pa);
+  Many some = Many(pa, 1);
+  Many exact3 = Many(pa, 3, 3);
 };
 
 TEST_F(ManyParserTest, ManyEmpty) {
-    TestContainerParserSuccess("", many,
-            Expected{}, CheckEmpty(), 0);
+  TestContainerParserSuccess("", many, Expected{}, 0, CheckEmpty());
 }
 
 TEST_F(ManyParserTest, ManyNoOne) {
-    TestContainerParserSuccess("BBB", many,
-            Expected{}, CheckNotEmpty('B'), 0);
+  TestContainerParserSuccess("BBB", many, Expected{}, 0, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, ManySome) {
-    TestContainerParserSuccess("AAAB", many,
-            Expected{'A','A','A'}, CheckNotEmpty('B'), 3);
+  TestContainerParserSuccess("AAAB", many,
+                             Expected{'A', 'A', 'A'}, 3,
+                             CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, ManyAll) {
-    TestContainerParserSuccess("AAAAA", many,
-            Expected{'A','A','A','A','A'}, CheckEmpty(), 5);
+  TestContainerParserSuccess("AAAAA", many,
+                             Expected{'A', 'A', 'A', 'A', 'A'}, 5,
+                             CheckEmpty());
 }
 
 TEST_F(ManyParserTest, SomeEmpty) {
-    TestContainerParserFail("", some);
+  TestContainerParserFail("", some);
 }
 
 TEST_F(ManyParserTest, SomeNoOne) {
-    TestContainerParserFail("BBB", some);
+  TestContainerParserFail("BBB", some);
 }
 
 TEST_F(ManyParserTest, SomeOne) {
-    TestContainerParserSuccess("AB", some,
-            Expected{'A'}, CheckNotEmpty('B'), 1);
+  TestContainerParserSuccess("AB", some, Expected{'A'}, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, SomeSome) {
-    TestContainerParserSuccess("AAAB", some,
-            Expected{'A','A','A'}, CheckNotEmpty('B'), 3);
+  TestContainerParserSuccess("AAAB", some,
+                             Expected{'A', 'A', 'A'}, 3,
+                             CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, SomeAll) {
-    TestContainerParserSuccess("AAAAA", some,
-            Expected{'A','A','A','A','A'}, CheckEmpty(), 5);
+  TestContainerParserSuccess("AAAAA", some,
+                             Expected{'A', 'A', 'A', 'A', 'A'}, 5,
+                             CheckEmpty());
 }
 
 TEST_F(ManyParserTest, RepeatEmpty) {
-    TestContainerParserFail("", exact3);
+  TestContainerParserFail("", exact3);
 }
 
 TEST_F(ManyParserTest, RepeatNoOne) {
-    TestContainerParserFail("B", exact3);
+  TestContainerParserFail("B", exact3);
 }
 
 TEST_F(ManyParserTest, RepeatNotEnough1) {
-    TestContainerParserFail("A", exact3);
+  TestContainerParserFail("A", exact3);
 }
 
 TEST_F(ManyParserTest, RepeatNotEnough2) {
-    TestContainerParserFail("AAB", exact3);
+  TestContainerParserFail("AAB", exact3);
 }
 
 TEST_F(ManyParserTest, RepeatEnough) {
-    TestContainerParserSuccess("AAA", exact3,
-            Expected{'A','A','A'}, CheckEmpty(), 3);
+  TestContainerParserSuccess("AAA", exact3,
+                             Expected{'A', 'A', 'A'}, 3,
+                             CheckEmpty());
 }
 
 TEST_F(ManyParserTest, RepeatMore) {
-    TestContainerParserSuccess("AAAA", exact3,
-            Expected{'A','A','A'}, CheckNotEmpty('A'), 3);
+  TestContainerParserSuccess("AAAA", exact3,
+                             Expected{'A', 'A', 'A'}, 3,
+                             CheckNotEmpty('A'));
 }

@@ -5,6 +5,7 @@
 #include <variant>
 #include <utility>
 
+#include "pcomb/common.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"

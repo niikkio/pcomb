@@ -7,7 +7,7 @@
 #include "common.h"
 
 #include "pcomb/adaptive.h"
-#include "pcomb/alternative.h"
+#include "pcomb/strict_alternative.h"
 #include "pcomb/many.h"
 #include "pcomb/predicate.h"
 
@@ -32,7 +32,7 @@ TEST_F(AdaptiveParserTest, AdaptedManyAlternative) {
   Ch pa = Ch([](char c) { return c == 'A'; });
   Ch pb = Ch([](char c) { return c == 'B'; });
 
-  auto a = pcomb::AlternativeParser(pa, pb);
+  auto a = pcomb::StrictAlternativeParser(pa, pb);
   auto f_a = [](std::variant<char, char>&& v) {
                auto value = std::get_if<0>(&v);
                if (value != nullptr) return *value;

@@ -6,8 +6,10 @@
 #include "common.h"
 
 #include "pcomb/alternative.h"
+#include "pcomb/common.h"
 #include "pcomb/many.h"
 #include "pcomb/predicate.h"
+#include "pcomb/skipped.h"
 
 class AlternativeParserTest : public ::testing::Test {
  protected:
@@ -18,11 +20,18 @@ class AlternativeParserTest : public ::testing::Test {
   using A2 = pcomb::AlternativeParser<Ch, Many>;
   using A3 = pcomb::AlternativeParser<Ch, Ch, Ch>;
 
+  using SkippedCh = pcomb::SkippedParser<Ch>;
+  using SkippedMany = pcomb::SkippedParser<Many>;
+
+  using SkippedA2 = pcomb::AlternativeParser<SkippedCh, SkippedMany>;
+
   using Stream = pcomb::MockStream;
 
-  using Expected1 = std::variant<char>;
+  using Expected1 = char;
   using Expected2 = std::variant<char, std::list<char> >;
-  using Expected3 = std::variant<char, char, char>;
+  using Expected3 = char;
+
+  using ExpectedA2 = pcomb::SkippedValue;
 
   Ch pa = Ch([](char c) { return c == 'A'; });
   Ch pb = Ch([](char c) { return c == 'B'; });
@@ -34,12 +43,12 @@ class AlternativeParserTest : public ::testing::Test {
   A1 a1 = A1(pa);
   A2 a2 = A2(pa, mb);
   A3 a3 = A3(pa, pb, pc);
+
+  SkippedA2 as = SkippedA2(SkippedCh(pa), SkippedMany(mb));
 };
 
 TEST_F(AlternativeParserTest, SingleMatch) {
-  TestParserSuccess("A", a1,
-                    Expected1{std::in_place_index<0>, 'A'}, 1,
-                    CheckEmpty());
+  TestParserSuccess("A", a1, Expected1{'A'}, 1, CheckEmpty());
 }
 
 TEST_F(AlternativeParserTest, SingleNotMatch) {
@@ -47,21 +56,15 @@ TEST_F(AlternativeParserTest, SingleNotMatch) {
 }
 
 TEST_F(AlternativeParserTest, Take1) {
-  TestParserSuccess("ABC", a3,
-                    Expected3{std::in_place_index<0>, 'A'}, 1,
-                    CheckNotEmpty('B'));
+  TestParserSuccess("ABC", a3, Expected3{'A'}, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, Take2) {
-  TestParserSuccess("BCA", a3,
-                    Expected3{std::in_place_index<1>, 'B'}, 1,
-                    CheckNotEmpty('C'));
+  TestParserSuccess("BCA", a3, Expected3{'B'}, 1, CheckNotEmpty('C'));
 }
 
 TEST_F(AlternativeParserTest, Take3) {
-  TestParserSuccess("CAB", a3,
-                    Expected3{std::in_place_index<2>, 'C'}, 1,
-                    CheckNotEmpty('A'));
+  TestParserSuccess("CAB", a3, Expected3{'C'}, 1, CheckNotEmpty('A'));
 }
 
 TEST_F(AlternativeParserTest, TakeOneOrMany1) {
@@ -80,18 +83,23 @@ TEST_F(AlternativeParserTest, TakeOneOrMany2) {
 TEST_F(AlternativeParserTest, ManyAlternatives) {
   using A = pcomb::AlternativeParser<Many, Many>;
   using M = pcomb::ManyParser<A>;
-  using L = Many::ValueType;  // list<char>
-  using V = A::ValueType;     // variant<list<char>, list<char>>
-  using E = M::ValueType;     // list<V>
 
   auto p = M(A(ma, mb));
-  auto expected = E{
-    V{std::in_place_index<1>, L{'B', 'B'}},
-    V{std::in_place_index<0>, L{'A', 'A', 'A'}},
-    V{std::in_place_index<1>, L{'B'}},
-    V{std::in_place_index<0>, L{'A', 'A'}},
-    V{std::in_place_index<1>, L{'B', 'B', 'B'}}
+  auto expected = M::ValueType{
+      A::ValueType{'B', 'B'},
+      A::ValueType{'A', 'A', 'A'},
+      A::ValueType{'B'},
+      A::ValueType{'A', 'A'},
+      A::ValueType{'B', 'B', 'B'}
   };
 
   TestContainerParserSuccess("BBAAABAABBB", p, expected, 11, CheckEmpty());
+}
+
+TEST_F(AlternativeParserTest, AlternativeSkipped1) {
+  TestParserSuccess("ABBBBBC", as, ExpectedA2{}, 1, CheckNotEmpty('B'));
+}
+
+TEST_F(AlternativeParserTest, AlternativeSkipped2) {
+  TestParserSuccess("BBBBBAC", as, ExpectedA2{}, 5, CheckNotEmpty('A'));
 }

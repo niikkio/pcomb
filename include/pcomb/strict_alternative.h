@@ -1,5 +1,5 @@
-#ifndef PCOMB_ALTERNATIVE_H_
-#define PCOMB_ALTERNATIVE_H_
+#ifndef PCOMB_STRICT_ALTERNATIVE_H_
+#define PCOMB_STRICT_ALTERNATIVE_H_
 
 #include <tuple>
 #include <variant>
@@ -13,36 +13,16 @@
 namespace pcomb {
 
 template <typename P1, typename... PS>
-class AlternativeValue {
-  using TV = std::tuple<typename P1::ValueType, typename PS::ValueType...>;
-  using UTV = WithoutDuplicatesType<TV>;
-
-  template <typename V>
-  struct WrappedValue {
-    using Type = V;
-  };
-
-  template <typename... VS>
-  struct WrappedValue<std::tuple<VS...>> {
-    using Type = std::variant<VS...>;
-  };
-
-public:
-  using Type = typename WrappedValue<ExtractedType<UTV>>::Type;
-};
+using StrictAlternativeBaseType = Parser<
+    CommonCharType<P1, PS...>,
+    std::variant<typename P1::ValueType,
+                 typename PS::ValueType...>>;
 
 template <typename P1, typename... PS>
-using AlternativeValueType = typename AlternativeValue<P1, PS...>::Type; 
-
-template <typename P1, typename... PS>
-using AlternativeBaseType = Parser<CommonCharType<P1, PS...>,
-                                   AlternativeValueType<P1, PS...>>;
-
-template <typename P1, typename... PS>
-class AlternativeParser : public AlternativeBaseType<P1, PS...> {
+class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
  public:
-  using CharType = typename AlternativeBaseType<P1, PS...>::CharType;
-  using ValueType = typename AlternativeBaseType<P1, PS...>::ValueType;
+  using CharType = typename StrictAlternativeBaseType<P1, PS...>::CharType;
+  using ValueType = typename StrictAlternativeBaseType<P1, PS...>::ValueType;
 
  private:
   using ResultType = Result<ValueType>;
@@ -51,11 +31,11 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
-  explicit AlternativeParser(const P1& p1, const PS&... ps)
+  explicit StrictAlternativeParser(const P1& p1, const PS&... ps)
       : parsers_(std::make_tuple(p1, ps...)) {
   }
 
-  explicit AlternativeParser(P1&& p1, PS&&... ps)
+  explicit StrictAlternativeParser(P1&& p1, PS&&... ps)
       : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 
@@ -70,7 +50,8 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
       auto result = std::get<I>(parsers).parse(stream);
       if (result.success()) {
         int consumed = result.get_consumed_number();
-        return ResultType(consumed, ValueType(std::move(result).get_value()));
+        return ResultType(consumed, ValueType(std::in_place_index<I>,
+                                              std::move(result).get_value()));
       }
       return RecursiveAlternativeParser<I+1>::parse(parsers, stream);
     }
@@ -82,7 +63,9 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
       auto result = std::get<StorageSize-1>(parsers).parse(stream);
       if (result.success()) {
         int consumed = result.get_consumed_number();
-        return ResultType(consumed, ValueType(std::move(result).get_value()));
+        return ResultType(consumed,
+                          ValueType(std::in_place_index<StorageSize-1>,
+                                    std::move(result).get_value()));
       }
       return ResultType();
     }
@@ -92,4 +75,4 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
 };
 
 }  // namespace pcomb
-#endif  // PCOMB_ALTERNATIVE_H_
+#endif  // PCOMB_STRICT_ALTERNATIVE_H_

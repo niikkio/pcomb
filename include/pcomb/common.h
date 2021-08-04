@@ -6,11 +6,11 @@
 
 namespace pcomb {
 
-template <typename P, typename...PS>
+template <typename P1, typename...PS>
 using CommonCharType = std::enable_if_t<
-    std::conjunction_v<std::is_same<typename P::CharType,
+    std::conjunction_v<std::is_same<typename P1::CharType,
                                     typename PS::CharType>...>,
-    typename P::CharType>;
+    typename P1::CharType>;
 
 class SkippedValue {
  public:
@@ -101,7 +101,6 @@ struct Extracted {
 template <typename TV>
 using ExtractedType = typename Extracted<TV>::Type;
 
-
 template <size_t I, typename TV>
 struct Extract {
   static ExtractedType<TV> from(TV&& values) {
@@ -122,6 +121,64 @@ struct Extract<1, TV> {
     return std::get<0>(std::forward<TV>(values));
   }
 };
+
+template <typename V, size_t I, typename TV>
+struct RecursiveNotIn {
+  static constexpr bool value =
+      !std::is_same_v<V, std::tuple_element_t<I, TV>> &&
+      RecursiveNotIn<V, I-1, TV>::value;
+};
+
+template <typename V, typename TV>
+struct RecursiveNotIn<V, 0, TV> {
+  static constexpr bool value =
+      !std::is_same_v<V, std::tuple_element_t<0, TV>>;
+};
+
+template <typename V, typename TV>
+struct NotIn {
+  static constexpr bool value = RecursiveNotIn<V,
+                                               std::tuple_size_v<TV>-1,
+                                               TV>::value;
+};
+
+template <typename V, typename TV, bool Take>
+struct Append;
+
+template <typename V, typename TV>
+struct Append<V, TV, false> {
+  using Type = TV;
+};
+
+template <typename V, typename TV>
+struct Append<V, TV, true> {
+  using Type = decltype(std::tuple_cat(std::declval<TV>(),
+                                       std::declval<std::tuple<V>>()));
+};
+
+template <size_t I, typename TV>
+struct RecursiveWithoutDuplicates {
+ private:
+  using SET = typename RecursiveWithoutDuplicates<I-1, TV>::Type;
+  using V = typename std::tuple_element_t<I, TV>;
+
+ public:
+  using Type = typename Append<V, SET, NotIn<V, SET>::value>::Type;
+};
+
+template <typename TV>
+struct RecursiveWithoutDuplicates<0, TV> {
+  using Type = std::tuple<typename std::tuple_element_t<0, TV>>;
+};
+
+template <typename TV>
+struct WithoutDuplicates {
+  using Type = typename RecursiveWithoutDuplicates<std::tuple_size_v<TV>-1,
+                                                   TV>::Type;
+};
+
+template <typename TV>
+using WithoutDuplicatesType = typename WithoutDuplicates<TV>::Type;
 
 };  // namespace pcomb
 #endif  // PCOMB_COMMON_H_

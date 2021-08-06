@@ -7,9 +7,10 @@
 #include "common.h"
 
 #include "pcomb/adaptive.h"
-#include "pcomb/strict_alternative.h"
 #include "pcomb/many.h"
 #include "pcomb/predicate.h"
+#include "pcomb/strict_alternative.h"
+#include "pcomb/strict_sequence.h"
 
 class AdaptiveParserTest : public ::testing::Test {
  protected:
@@ -84,4 +85,20 @@ TEST_F(AdaptiveParserTest, Memory) {
   EXPECT_EQ(2, n);
   EXPECT_EQ(0, n_copy);
   EXPECT_EQ(3, n_move);
+}
+
+TEST_F(AdaptiveParserTest, Number) {
+  Ch digit = Ch([](char c) { return '0' <= c && c <= '9'; });
+
+  using Seq = pcomb::StrictSequenceParser<Ch, Ch>;
+  auto number = Seq(digit, digit);
+
+  using CharsToInt = std::function<int(char, char)>;
+  CharsToInt chars2int = [](char d1, char d0) {
+                           return 10 * (d1 - '0') + (d0 - '0');
+                         };
+  auto p = pcomb::AdaptiveParser<Seq, CharsToInt>(number, chars2int);
+
+  TestParserSuccess("42", p, 42, 2, CheckEmpty());
+  TestParserSuccess("131", p, 13, 2, CheckNotEmpty('1'));
 }

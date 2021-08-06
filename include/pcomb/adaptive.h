@@ -2,7 +2,10 @@
 #define PCOMB_ADAPTIVE_H_
 
 #include <functional>
+#include <tuple>
 #include <utility>
+
+#include <iostream>
 
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
@@ -11,12 +14,47 @@
 namespace pcomb {
 
 template <typename P, typename F>
+class AdaptiveValue {
+  template <typename V>
+  struct UnwrappedValue {
+    using Type = std::result_of_t<F(V)>;
+
+    static Type invoke(const F& func, V&& value) {
+      return func(std::forward<V>(value));
+    }
+  };
+
+  template <typename... VS>
+  struct UnwrappedValue<std::tuple<VS...>> {
+   private:
+     using TV = std::tuple<VS...>;
+
+   public:
+    using Type = std::result_of_t<F(VS...)>;
+
+    static Type invoke(const F& func, TV&& values) {
+      return std::apply(func, std::forward<TV>(values));
+    }
+  };
+
+  using ParserValueType = typename P::ValueType;
+
+ public:
+  using Type = typename UnwrappedValue<ParserValueType>::Type;
+
+  static Type invoke(const F& func, ParserValueType&& value) {
+    return UnwrappedValue<ParserValueType>::invoke(
+        func, std::forward<ParserValueType>(value));
+  }
+};
+
+
+template <typename P, typename F>
 class AdaptiveParser
-    : public Parser<typename P::CharType,
-                    std::result_of_t<F(typename P::ValueType)>> {
+    : public Parser<typename P::CharType, typename AdaptiveValue<P, F>::Type> {
  public:
   using CharType = typename P::CharType;
-  using ValueType = std::result_of_t<F(typename P::ValueType)>;
+  using ValueType = typename AdaptiveValue<P, F>::Type;
 
  private:
   using ResultType = Result<ValueType>;
@@ -38,7 +76,8 @@ class AdaptiveParser
     }
 
     int consumed_number = result.get_consumed_number();
-    return ResultType(consumed_number, func_(std::move(result).get_value()));
+    return ResultType(consumed_number, AdaptiveValue<P, F>::invoke(
+        func_, std::move(result).get_value()));
   }
 
  private:

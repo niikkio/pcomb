@@ -27,12 +27,12 @@ class AlternativeValue {
     using Type = std::variant<VS...>;
   };
 
-public:
+ public:
   using Type = typename WrappedValue<ExtractedType<UTV>>::Type;
 };
 
 template <typename P1, typename... PS>
-using AlternativeValueType = typename AlternativeValue<P1, PS...>::Type; 
+using AlternativeValueType = typename AlternativeValue<P1, PS...>::Type;
 
 template <typename P1, typename... PS>
 using AlternativeBaseType = Parser<CommonCharType<P1, PS...>,

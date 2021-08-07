@@ -2,8 +2,8 @@
 #define PCOMB_ALTERNATIVE_H_
 
 #include <tuple>
-#include <variant>
 #include <utility>
+#include <variant>
 
 #include "pcomb/common.h"
 #include "pcomb/parser.h"

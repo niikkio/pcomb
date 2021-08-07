@@ -86,5 +86,4 @@ class AdaptiveParser
 };
 
 }  // namespace pcomb
-
 #endif  // PCOMB_ADAPRIVE_H_

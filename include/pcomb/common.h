@@ -14,7 +14,7 @@ using CommonCharType = std::enable_if_t<
 
 class SkippedValue {
  public:
-  bool operator==(const SkippedValue&) const {
+  inline bool operator==(const SkippedValue&) const {
     return true;
   }
 };
@@ -66,9 +66,8 @@ struct WithoutSkipped {
   static constexpr size_t Size = std::tuple_size_v<TV>;
 
  public:
-  using Type = typename RecursiveWithoutSkipped<Size-1,
-                                                IsSkipped<Size-1, TV>,
-                                                TV>::Type;
+  using Type = typename RecursiveWithoutSkipped<
+      Size-1, IsSkipped<Size-1, TV>, TV>::Type;
 };
 
 template <typename TV>
@@ -137,9 +136,8 @@ struct RecursiveNotIn<V, 0, TV> {
 
 template <typename V, typename TV>
 struct NotIn {
-  static constexpr bool value = RecursiveNotIn<V,
-                                               std::tuple_size_v<TV>-1,
-                                               TV>::value;
+  static constexpr bool value = RecursiveNotIn<
+      V, std::tuple_size_v<TV>-1, TV>::value;
 };
 
 template <typename V, typename TV, bool Take>
@@ -173,8 +171,8 @@ struct RecursiveWithoutDuplicates<0, TV> {
 
 template <typename TV>
 struct WithoutDuplicates {
-  using Type = typename RecursiveWithoutDuplicates<std::tuple_size_v<TV>-1,
-                                                   TV>::Type;
+  using Type = typename RecursiveWithoutDuplicates<
+      std::tuple_size_v<TV>-1, TV>::Type;
 };
 
 template <typename TV>

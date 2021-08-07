@@ -34,10 +34,10 @@ class PredicateParser : public Parser<T, T> {
     CharType ch(stream->head());
     if (predicate_(ch)) {
       stream->consume(1);
-      return ResultType(1, ch);
-    } else {
-      return ResultType();
+      return ResultType(1, std::move(ch));
     }
+
+    return ResultType();
   }
 
  private:

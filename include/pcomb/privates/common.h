@@ -1,10 +1,10 @@
-#ifndef PCOMB_COMMON_H_
-#define PCOMB_COMMON_H_
+#ifndef PCOMB_PRIVATES_COMMON_H_
+#define PCOMB_PRIVATES_COMMON_H_
 
 #include <tuple>
 #include <utility>
 
-namespace pcomb {
+namespace pcomb::privates {
 
 template <typename P1, typename...PS>
 using CommonCharType = std::enable_if_t<
@@ -178,5 +178,5 @@ struct WithoutDuplicates {
 template <typename TV>
 using WithoutDuplicatesType = typename WithoutDuplicates<TV>::Type;
 
-};  // namespace pcomb
-#endif  // PCOMB_COMMON_H_
+};  // namespace pcomb::privates
+#endif  // PCOMB_PRIVATES_COMMON_H_

@@ -5,28 +5,24 @@
 #include "pcomb/exact.h"
 #include "pcomb/predicate.h"
 
-class ExactParserTest : public ::testing::Test {
- protected:
-  using Ch = pcomb::PredicateParser<char>;
-  using Ex = pcomb::ExactParser<Ch>;
+using pcomb::Char;
+using pcomb::Exact;
 
-  Ch pa = Ch([](char c) { return c == 'A'; });
-  Ex pe = Ex(pa);
-};
+class ExactParserTest : public ::testing::Test { };
 
 TEST_F(ExactParserTest, Empty) {
-  TestParserFail("", pe);
+  TestParserFail("", Exact(Char('A')));
 }
 
 TEST_F(ExactParserTest, HeadNotMatch) {
-  TestParserFail("B", pe);
+  TestParserFail("B", Exact(Char('A')));
 }
 
 TEST_F(ExactParserTest, HeadMatchStreamEnded) {
-  TestParserSuccess("A", pe, 'A', 1, CheckEmpty());
+  TestParserSuccess("A", Exact(Char('A')), 'A', 1, CheckEmpty());
 }
 
 TEST_F(ExactParserTest, HeadMatchStreamNotEnded) {
-  TestParserFail("AB", pe);
+  TestParserFail("AB", Exact(Char('A')));
 }
 

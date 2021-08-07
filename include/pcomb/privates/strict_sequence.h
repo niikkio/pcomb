@@ -1,16 +1,16 @@
-#ifndef PCOMB_STRICT_SEQUENCE_H_
-#define PCOMB_STRICT_SEQUENCE_H_
+#ifndef PCOMB_PRIVATE_STRICT_SEQUENCE_H_
+#define PCOMB_PRIVATE_STRICT_SEQUENCE_H_
 
 #include <memory>
 #include <tuple>
 #include <utility>
 
-#include "pcomb/common.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/privates/common.h"
 
-namespace pcomb {
+namespace pcomb::privates {
 
 template <typename P1, typename... PS>
 using StrictSequenceBaseType = Parser<CommonCharType<P1, PS...>,
@@ -103,5 +103,5 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   StorageType parsers_;
 };
 
-}  // namespace pcomb
-#endif  // PCOMB_STRICT_SEQUENCE_H_
+}  // namespace pcomb::privates
+#endif  // PCOMB_PRIVATES_STRICT_SEQUENCE_H_

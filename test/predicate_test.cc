@@ -4,21 +4,18 @@
 
 #include "pcomb/predicate.h"
 
-class PredicateParserTest : public ::testing::Test {
- protected:
-  using Ch = pcomb::PredicateParser<char>;
+using pcomb::Char;
 
-  Ch pa = Ch([](char c) { return c == 'A'; });
-};
+class PredicateParserTest : public ::testing::Test { };
 
 TEST_F(PredicateParserTest, Empty) {
-  TestParserFail("", pa);
+  TestParserFail("", Char('A'));
 }
 
 TEST_F(PredicateParserTest, HeadMatch) {
-  TestParserSuccess("AB", pa, 'A', 1, CheckNotEmpty('B'));
+  TestParserSuccess("AB", Char('A'), 'A', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(PredicateParserTest, HeadNotMatch) {
-  TestParserFail("BA", pa);
+  TestParserFail("BA", Char('A'));
 }

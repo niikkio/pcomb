@@ -1,16 +1,16 @@
-#ifndef PCOMB_STRICT_ALTERNATIVE_H_
-#define PCOMB_STRICT_ALTERNATIVE_H_
+#ifndef PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_
+#define PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_
 
 #include <tuple>
 #include <utility>
 #include <variant>
 
-#include "pcomb/common.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/privates/common.h"
 
-namespace pcomb {
+namespace pcomb::privates {
 
 template <typename P1, typename... PS>
 using StrictAlternativeBaseType = Parser<
@@ -74,5 +74,5 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   StorageType parsers_;
 };
 
-}  // namespace pcomb
-#endif  // PCOMB_STRICT_ALTERNATIVE_H_
+}  // namespace pcomb::privates
+#endif  // PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_

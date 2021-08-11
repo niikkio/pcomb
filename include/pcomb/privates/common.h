@@ -19,6 +19,13 @@ class SkippedValue {
   }
 };
 
+class NoValue {
+ public:
+  inline bool operator==(const NoValue&) const {
+    return true;
+  }
+};
+
 template <typename V, typename TV>
 using ConcatedType = decltype(std::tuple_cat(
     std::declval<std::tuple<V>>(),

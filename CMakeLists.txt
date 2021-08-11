@@ -10,7 +10,7 @@ find_package(Boost REQUIRED)
 set(PCOMB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/pcomb")
 
 add_library(pcomb SHARED
-    ${PCOMB_SOURCE_DIR}/mock_stream.cc
+    ${PCOMB_SOURCE_DIR}/string_stream.cc
 )
 
 set_target_properties(pcomb PROPERTIES

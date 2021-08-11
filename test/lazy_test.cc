@@ -7,12 +7,12 @@
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"
 #include "pcomb/lazy.h"
-#include "pcomb/mock_stream.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 #include "pcomb/skipped.h"
+#include "pcomb/string_stream.h"
 
-using Stream = pcomb::MockStream;
+using Stream = pcomb::StringStream;
 using pcomb::Adapted;
 using pcomb::Any;
 using pcomb::Char;

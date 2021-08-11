@@ -8,18 +8,18 @@
 #include <string>
 #include <utility>
 
-#include "pcomb/mock_stream.h"
+#include "pcomb/string_stream.h"
 
-using StreamCheck = std::function<void(const pcomb::MockStream&)>;
+using StreamCheck = std::function<void(const pcomb::StringStream&)>;
 
 inline StreamCheck CheckEmpty() {
-  return [](const pcomb::MockStream& s) {
+  return [](const pcomb::StringStream& s) {
            EXPECT_TRUE(s.empty());
          };
 }
 
 inline StreamCheck CheckNotEmpty(char head) {
-  return [head](const pcomb::MockStream& s) {
+  return [head](const pcomb::StringStream& s) {
            EXPECT_FALSE(s.empty());
            EXPECT_EQ(s.head(), head);
          };
@@ -31,7 +31,7 @@ inline void TestContainerParserSuccess(std::string input,
                                        const Expected& expected,
                                        int expected_consumed_number,
                                        const StreamCheck& check) {
-  pcomb::MockStream s(std::move(input));
+  pcomb::StringStream s(std::move(input));
 
   auto res = parser.parse(&s);
   EXPECT_TRUE(res.success());
@@ -44,7 +44,7 @@ inline void TestContainerParserSuccess(std::string input,
 
 template <typename Parser>
 inline void TestContainerParserFail(std::string input, const Parser& parser) {
-  pcomb::MockStream s(std::move(input));
+  pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
   auto res = parser.parse(&s);
@@ -60,7 +60,7 @@ inline void TestParserSuccess(std::string input,
                               const Expected& expected,
                               int expected_consumed_number,
                               const StreamCheck& check) {
-  pcomb::MockStream s(std::move(input));
+  pcomb::StringStream s(std::move(input));
 
   auto res = parser.parse(&s);
   EXPECT_TRUE(res.success());
@@ -72,7 +72,7 @@ inline void TestParserSuccess(std::string input,
 
 template <typename Parser>
 inline void TestParserFail(std::string input, const Parser& parser) {
-  pcomb::MockStream s(std::move(input));
+  pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
   auto res = parser.parse(&s);

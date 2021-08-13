@@ -22,5 +22,13 @@ target_include_directories(pcomb PRIVATE ${PCOMB_SOURCE_DIR}
 
 target_link_libraries(pcomb PRIVATE ${Boost_LIBRARIES})
 
-enable_testing()
-add_subdirectory(test)
+# The tests are not built by default. To build them, set the
+# pcomb_build_tests option to ON. You can do it by specifying
+# the -Dpcomb_build_tests=ON flag when running cmake.
+
+option(pcomb_build_tests "Build all of pcomb's own tests." OFF)
+
+if (pcomb_build_tests)
+  enable_testing()
+  add_subdirectory(test)
+endif()

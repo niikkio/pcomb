@@ -12,6 +12,7 @@
 #include "pcomb/skipped.h"
 #include "pcomb/sequence.h"
 #include "pcomb/predicate.h"
+#include "pcomb/until.h"
 
 #include "pcomb/privates/predicate.h"
 
@@ -42,6 +43,14 @@ inline auto String(const std::string& s) {
                  std::inserter(parsers, parsers.begin()),
                  Char<char>);
   return Chain(std::move(parsers));
+}
+
+inline auto Line() {
+  return Until(NewLine());
+}
+
+inline auto Word() {
+  return Until(Space());
 }
 
 }  // namespace pcomb

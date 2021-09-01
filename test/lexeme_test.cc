@@ -8,9 +8,11 @@
 using pcomb::Char;
 using pcomb::Digit;
 using pcomb::Inside;
+using pcomb::Line;
 using pcomb::NewLine;
 using pcomb::Space;
 using pcomb::String;
+using pcomb::Word;
 
 class LexemeParserTest : public ::testing::Test {
  protected:
@@ -93,4 +95,47 @@ TEST_F(LexemeParserTest, StringMatch) {
 
 TEST_F(LexemeParserTest, StringNotMatch) {
   TestContainerParserFail("ADC", String("ABC"));
+}
+
+TEST_F(LexemeParserTest, LineFromEmpty) {
+  TestContainerParserSuccess("", Line(), Expected{}, 0, CheckEmpty());
+}
+
+TEST_F(LexemeParserTest, LineFromOneLineWithNewLine) {
+  TestContainerParserSuccess("AB\n", Line(),
+                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+}
+
+TEST_F(LexemeParserTest, LineFromOneLineWithoutNewLine) {
+  TestContainerParserSuccess("AB", Line(),
+                             Expected{'A', 'B'}, 2, CheckEmpty());
+}
+
+TEST_F(LexemeParserTest, LineFromManyLines) {
+  TestContainerParserSuccess("AB\nCD", Line(),
+                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+}
+
+TEST_F(LexemeParserTest, WordFromEmpty) {
+  TestContainerParserSuccess("", Word(), Expected{}, 0, CheckEmpty());
+}
+
+TEST_F(LexemeParserTest, WordFromOneWordWithoutSpace) {
+  TestContainerParserSuccess("AB", Word(),
+                             Expected{'A', 'B'}, 2, CheckEmpty());
+}
+
+TEST_F(LexemeParserTest, WordFromOneWordWithSpace) {
+  TestContainerParserSuccess("AB ", Word(),
+                             Expected{'A', 'B'}, 2, CheckNotEmpty(' '));
+}
+
+TEST_F(LexemeParserTest, WordFromOneWordWithNewLine) {
+  TestContainerParserSuccess("AB\n", Word(),
+                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+}
+
+TEST_F(LexemeParserTest, WordFromOneWordWithTab) {
+  TestContainerParserSuccess("AB\t", Word(),
+                             Expected{'A', 'B'}, 2, CheckNotEmpty('\t'));
 }

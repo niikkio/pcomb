@@ -6,7 +6,7 @@
 
 namespace pcomb::privates {
 
-template <typename P1, typename...PS>
+template <typename P1, typename... PS>
 using CommonCharType = std::enable_if_t<
     std::conjunction_v<std::is_same<typename P1::CharType,
                                     typename PS::CharType>...>,

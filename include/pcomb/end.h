@@ -5,9 +5,9 @@
 
 namespace pcomb {
 
-template <typename Char>
+template <typename CharType>
 inline auto End() {
-  return privates::EndParser<Char>();
+  return privates::EndParser<CharType>();
 }
 
 }  // namespace pcomb

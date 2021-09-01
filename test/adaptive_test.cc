@@ -8,6 +8,7 @@
 
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"
+#include "pcomb/lexeme.h"
 #include "pcomb/many.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"

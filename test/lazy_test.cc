@@ -7,6 +7,7 @@
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"
 #include "pcomb/lazy.h"
+#include "pcomb/lexeme.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 #include "pcomb/skipped.h"

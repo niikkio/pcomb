@@ -3,11 +3,13 @@
 
 #include <algorithm>
 #include <cctype>
+#include <functional>
 #include <iterator>
 #include <list>
 #include <string>
 #include <utility>
 
+#include "pcomb/adaptive.h"
 #include "pcomb/chain.h"
 #include "pcomb/skipped.h"
 #include "pcomb/sequence.h"
@@ -42,7 +44,13 @@ inline auto String(const std::string& s) {
   std::transform(s.cbegin(), s.cend(),
                  std::inserter(parsers, parsers.begin()),
                  Char<char>);
-  return Chain(std::move(parsers));
+
+  std::function<std::string(std::list<char>)> adapter =
+      [](std::list<char>&& chars) {
+        return std::string(chars.cbegin(), chars.cend());
+      };
+
+  return Adapted(Chain(std::move(parsers)), adapter);
 }
 
 inline auto Line() {

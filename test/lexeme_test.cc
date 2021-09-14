@@ -76,25 +76,25 @@ TEST_F(LexemeParserTest, NewLineMatch) {
 }
 
 TEST_F(LexemeParserTest, StringFromEmpty) {
-  TestContainerParserFail("", String("ABC"));
+  TestParserFail("", String("ABC"));
 }
 
 TEST_F(LexemeParserTest, EmptyStringFromEmpty) {
-  TestContainerParserSuccess("", String(""), Expected{}, 0, CheckEmpty());
+  TestParserSuccess("", String(""), "", 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, EmptyString) {
-  TestContainerParserSuccess("AB", String(""),
-                             Expected{}, 0, CheckNotEmpty('A'));
+  TestParserSuccess("AB", String(""),
+                    "", 0, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, StringMatch) {
-  TestContainerParserSuccess("ABC", String("ABC"),
-                             Expected{'A', 'B', 'C'}, 3, CheckEmpty());
+  TestParserSuccess("ABC", String("ABC"),
+                    "ABC", 3, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, StringNotMatch) {
-  TestContainerParserFail("ADC", String("ABC"));
+  TestParserFail("ADC", String("ABC"));
 }
 
 TEST_F(LexemeParserTest, LineFromEmpty) {

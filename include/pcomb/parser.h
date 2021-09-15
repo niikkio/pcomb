@@ -1,7 +1,7 @@
 #ifndef PCOMB_PARSER_H_
 #define PCOMB_PARSER_H_
 
-#include <type_traits>
+#include <memory>
 
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -18,6 +18,12 @@ class Parser {
 
   virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
 };
+
+template <typename T, typename C = char>
+using ParserType = Parser<C, T>;
+
+template <typename T, typename C = char>
+using ParserPointerType = std::shared_ptr<ParserType<T, C>>;
 
 }  // namespace pcomb
 #endif  // PCOMB_PARSER_H_

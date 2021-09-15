@@ -16,6 +16,7 @@
 using pcomb::Adapted;
 using pcomb::Char;
 using pcomb::Digit;
+using pcomb::Many;
 using pcomb::StrictAny;
 using pcomb::StrictSeq;
 

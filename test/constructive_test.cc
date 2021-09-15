@@ -5,12 +5,14 @@
 #include "common.h"
 
 #include "pcomb/constructive.h"
+#include "pcomb/parser.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 
 using pcomb::Char;
-using pcomb::Seq;
 using pcomb::Construct;
+using pcomb::ParserPointerType;
+using pcomb::Seq;
 
 class ConstructiveParserTest : public ::testing::Test {
  protected:
@@ -38,3 +40,10 @@ TEST_F(ConstructiveParserTest, NotMatch) {
   auto parser = Construct<Pair>(Seq(Char('A'), Char('B')));
   TestParserFail("BA", parser);
 }
+
+TEST_F(ConstructiveParserTest, PointerMatch) {
+  ParserPointerType<Pair> parser =
+      pcomb::ConstructPointer<Pair>(Seq(Char('A'), Char('B')));
+  TestParserSuccess("AB", *parser, Pair{'A', 'B'}, 2, CheckEmpty());
+}
+

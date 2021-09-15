@@ -31,6 +31,17 @@ using ConcatedType = decltype(std::tuple_cat(
     std::declval<std::tuple<V>>(),
     std::declval<TV>()));
 
+template <typename V, typename TV, bool Take = true>
+struct Append {
+  using Type = decltype(std::tuple_cat(std::declval<TV>(),
+                                       std::declval<std::tuple<V>>()));
+};
+
+template <typename V, typename TV>
+struct Append<V, TV, false> {
+  using Type = TV;
+};
+
 template <size_t I, typename TP>
 using WrappedValueType = std::tuple<
     typename std::tuple_element_t<I, TP>::ValueType>;
@@ -46,15 +57,10 @@ inline constexpr bool IsSkippedParser =
 
 template <size_t I, bool Skip, typename TV>
 struct RecursiveWithoutSkipped {
-  using Type = ConcatedType<
-      std::tuple_element_t<I, TV>,
-      typename RecursiveWithoutSkipped<I-1, IsSkipped<I-1, TV>, TV>::Type>;
-};
-
-template <size_t I, typename TV>
-struct RecursiveWithoutSkipped<I, true, TV> {
-  using Type =
-      typename RecursiveWithoutSkipped<I-1, IsSkipped<I-1, TV>, TV>::Type;
+  using Type = typename Append<
+      typename std::tuple_element<I, TV>::type,
+      typename RecursiveWithoutSkipped<I-1, IsSkipped<I-1, TV>, TV>::Type,
+      !Skip>::Type;
 };
 
 template <typename TV>
@@ -145,20 +151,6 @@ template <typename V, typename TV>
 struct NotIn {
   static constexpr bool value = RecursiveNotIn<
       V, std::tuple_size_v<TV>-1, TV>::value;
-};
-
-template <typename V, typename TV, bool Take>
-struct Append;
-
-template <typename V, typename TV>
-struct Append<V, TV, false> {
-  using Type = TV;
-};
-
-template <typename V, typename TV>
-struct Append<V, TV, true> {
-  using Type = decltype(std::tuple_cat(std::declval<TV>(),
-                                       std::declval<std::tuple<V>>()));
 };
 
 template <size_t I, typename TV>

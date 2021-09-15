@@ -12,7 +12,7 @@
 namespace pcomb::privates {
 
 template <typename P, typename F>
-class AdaptiveValue {
+class AdaptedValue {
   template <typename V>
   struct UnwrappedValue {
     using Type = std::result_of_t<F(V)>;
@@ -49,10 +49,10 @@ class AdaptiveValue {
 
 template <typename P, typename F>
 class AdaptiveParser
-    : public Parser<typename P::CharType, typename AdaptiveValue<P, F>::Type> {
+    : public Parser<typename P::CharType, typename AdaptedValue<P, F>::Type> {
  public:
   using CharType = typename P::CharType;
-  using ValueType = typename AdaptiveValue<P, F>::Type;
+  using ValueType = typename AdaptedValue<P, F>::Type;
 
  private:
   using ResultType = Result<ValueType>;
@@ -74,7 +74,7 @@ class AdaptiveParser
     }
 
     int consumed_number = result.get_consumed_number();
-    return ResultType(consumed_number, AdaptiveValue<P, F>::invoke(
+    return ResultType(consumed_number, AdaptedValue<P, F>::invoke(
         func_, std::move(result).get_value()));
   }
 

@@ -5,7 +5,7 @@
 
 namespace pcomb {
 
-template <typename CharType>
+template <typename CharType = char>
 inline auto End() {
   return privates::EndParser<CharType>();
 }

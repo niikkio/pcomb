@@ -13,6 +13,12 @@ inline auto Char(Ch ch) {
       [ch](Ch c) { return c == ch; });
 }
 
+template <typename Ch = char>
+inline auto AnyChar() {
+  return privates::PredicateParser<Ch>(
+      [](Ch c) { return true; });
+}
+
 template <typename Ch>
 using CharParserType = std::invoke_result_t<decltype(Char<Ch>), Ch>;
 

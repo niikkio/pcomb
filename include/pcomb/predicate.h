@@ -19,6 +19,11 @@ inline auto AnyChar() {
       [](Ch c) { return true; });
 }
 
+inline auto LatinChar() {
+  return privates::PredicateParser<char>(
+      [](char c) { return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'; });
+}
+
 template <typename Ch>
 using CharParserType = std::invoke_result_t<decltype(Char<Ch>), Ch>;
 

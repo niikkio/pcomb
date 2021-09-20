@@ -43,7 +43,7 @@ TEST_F(ConstructiveParserTest, NotMatch) {
 
 TEST_F(ConstructiveParserTest, PointerMatch) {
   ParserPointerType<Pair> parser =
-      pcomb::ConstructPointer<Pair>(Seq(Char('A'), Char('B')));
+      pcomb::PointerToConstruct<Pair>(Seq(Char('A'), Char('B')));
   TestParserSuccess("AB", *parser, Pair{'A', 'B'}, 2, CheckEmpty());
 }
 

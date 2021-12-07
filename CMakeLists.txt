@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(pcomb VERSION 0.0.1 DESCRIPTION "C++ Combinatory Parsing")
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS --coverage)
 
 
 # set Boost_INCLUDE_DIR and Boost_LIBRARY_DIR for local build

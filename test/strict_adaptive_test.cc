@@ -3,7 +3,7 @@
 #include <functional>
 #include <tuple>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/adaptive.h"
 #include "pcomb/predicate.h"

@@ -3,7 +3,7 @@
 #include <list>
 #include <variant>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/alternative.h"
 #include "pcomb/many.h"
@@ -16,71 +16,89 @@ using pcomb::Many;
 using pcomb::Skip;
 using pcomb::Some;
 
-class AlternativeParserTest : public ::testing::Test { };
+class AlternativeParserTest : public ::testing::Test {
+ protected:
+  static auto pA() {
+    return Any(Char('A'));
+  }
+
+  static auto pABC() {
+    return Any(Char('A'), Char('B'), Char('C'));
+  }
+
+  static auto pABs() {
+    return Any(Char('A'), Some(Char('B')));
+  }
+
+  static auto expectedABs_A() {
+    return std::variant<char, std::list<char>> {
+        std::in_place_index<0>, 'A'};
+  }
+
+  static auto expectedABs_Bs(size_t n) {
+    return std::variant<char, std::list<char>> {
+        std::in_place_index<1>, std::list<char>(n, 'B')};
+  }
+
+  static auto pManyAsBs() {
+    return Many(Any(Some(Char('A')), Some(Char('B'))));
+  }
+
+  using ExpectedManyAsBs = std::list<std::list<char>>;
+
+  static auto pSkippedAsSkippedBs() {
+    return Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
+  }
+
+  static auto expectedSkippedAsSkippedBs() {
+    return decltype(pSkippedAsSkippedBs())::ValueType();
+  }
+};
 
 TEST_F(AlternativeParserTest, SingleMatch) {
-  TestParserSuccess("A", Any(Char('A')), 'A', 1, CheckEmpty());
+  TestParserSuccess("A", pA(), 'A', 1, CheckEmpty());
 }
 
 TEST_F(AlternativeParserTest, SingleNotMatch) {
-  TestParserFail("B", Any(Char('A')));
+  TestParserFail("B", pA());
 }
 
 TEST_F(AlternativeParserTest, Take1) {
-  auto parser = Any(Char('A'), Char('B'), Char('C'));
-  TestParserSuccess("ABC", parser, 'A', 1, CheckNotEmpty('B'));
+  TestParserSuccess("ABC", pABC(), 'A', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, Take2) {
-  auto parser = Any(Char('A'), Char('B'), Char('C'));
-  TestParserSuccess("BCA", parser, 'B', 1, CheckNotEmpty('C'));
+  TestParserSuccess("BCA", pABC(), 'B', 1, CheckNotEmpty('C'));
 }
 
 TEST_F(AlternativeParserTest, Take3) {
-  auto parser = Any(Char('A'), Char('B'), Char('C'));
-  TestParserSuccess("CAB", parser, 'C', 1, CheckNotEmpty('A'));
+  TestParserSuccess("CAB", pABC(), 'C', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(AlternativeParserTest, TakeOneOrMany1) {
-  using Expected = std::variant<char, std::list<char> >;
-  auto parser = Any(Char('A'), Some(Char('B')));
-  TestParserSuccess("ABBB", parser,
-                    Expected{std::in_place_index<0>, 'A'}, 1,
-                    CheckNotEmpty('B'));
+  TestParserSuccess("ABBB", pABs(),
+                    expectedABs_A(), 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, TakeOneOrMany2) {
-  using Expected = std::variant<char, std::list<char> >;
-  auto parser = Any(Char('A'), Some(Char('B')));
-  TestParserSuccess(
-      "BBBA", parser,
-      Expected{std::in_place_index<1>, std::list<char>{'B', 'B', 'B'}}, 3,
-      CheckNotEmpty('A'));
+  TestParserSuccess("BBBA", pABs(),
+                    expectedABs_Bs(3), 3, CheckNotEmpty('A'));
 }
 
 TEST_F(AlternativeParserTest, ManyAlternatives) {
-  auto parser = Many(Any(Some(Char('A')), Some(Char('B'))));
-  auto expected = std::list<std::list<char>>{
-      std::list<char>{'B', 'B'},
-      std::list<char>{'A', 'A', 'A'},
-      std::list<char>{'B'},
-      std::list<char>{'A', 'A'},
-      std::list<char>{'B', 'B', 'B'}
-  };
+  auto expected = ExpectedManyAsBs {
+      {'B', 'B'}, {'A', 'A', 'A'}, {'B'}, {'A', 'A'}, {'B', 'B', 'B'}};
 
-  TestContainerParserSuccess("BBAAABAABBB", parser, expected, 11, CheckEmpty());
+  TestContainerParserSuccess("BBAAABAABBB", pManyAsBs(),
+                             expected, 11, CheckEmpty());
 }
 
 TEST_F(AlternativeParserTest, AlternativeSkipped1) {
-  auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
-  using Expected = decltype(parser)::ValueType;
-
-  TestParserSuccess("ABBBBBC", parser, Expected{}, 1, CheckNotEmpty('B'));
+  TestParserSuccess("ABBBBBC", pSkippedAsSkippedBs(),
+                    expectedSkippedAsSkippedBs(), 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, AlternativeSkipped2) {
-  auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
-  using Expected = decltype(parser)::ValueType;
-
-  TestParserSuccess("BBBBBAC", parser, Expected{}, 5, CheckNotEmpty('A'));
+  TestParserSuccess("BBBBBAC", pSkippedAsSkippedBs(),
+                    expectedSkippedAsSkippedBs(), 5, CheckNotEmpty('A'));
 }

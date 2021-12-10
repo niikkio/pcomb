@@ -1,10 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <functional>
-#include <list>
-#include <variant>
-
-#include "common.h"
+#include "testing.h"
+#include "transformers.h"
 
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"
@@ -22,49 +19,39 @@ using pcomb::StrictSeq;
 
 class AdaptiveParserTest : public ::testing::Test {
  protected:
-  std::function<int(char)> char2int{
-      [](char c) { return c - '0'; }};
+  static auto pManyAB() {
+    return Adapted(
+        Many(Adapted(StrictAny(Char('A'), Char('B')), &variant2char)),
+        &list2string);
+  }
 
-  std::function<char(std::variant<char, char>)> var2char{
-      [](std::variant<char, char>&& v) {
-        auto value = std::get_if<0>(&v);
-        if (value != nullptr) return *value;
-        return *std::get_if<1>(&v);
-      }};
+  static auto pDigit() {
+    return Adapted(Digit(), &char2int);
+  }
 
-  std::function<std::string(std::list<char>)> list2string{
-      [](std::list<char>&& chars) {
-        return std::string(chars.cbegin(), chars.cend());
-      }};
-
-  std::function<int(char, char)> chars2int{
-      [](char d1, char d0) {
-        return 10 * (d1 - '0') + (d0 - '0');
-      }};
+  static auto pTwoDigits() {
+    return Adapted(StrictSeq(Digit(), Digit()), &chars2int);
+  }
 };
 
 TEST_F(AdaptiveParserTest, HeadMatch) {
-  TestParserSuccess("8", Adapted(Digit(), char2int), 8, 1, CheckEmpty());
+  TestParserSuccess("8", pDigit(), 8, 1, CheckEmpty());
 }
 
 TEST_F(AdaptiveParserTest, HeadNotMatch) {
-  TestParserFail("A", Adapted(Digit(), char2int));
+  TestParserFail("A", pDigit());
 }
 
 TEST_F(AdaptiveParserTest, AdaptedManyAlternative) {
-  auto parser = Adapted(
-      Many(Adapted(StrictAny(Char('A'), Char('B')), var2char)), list2string);
-
-  TestParserSuccess("ABBAABABC", parser,
-                    std::string("ABBAABAB"), 8,
-                    CheckNotEmpty('C'));
+  TestParserSuccess("ABBAABABC", pManyAB(), "ABBAABAB", 8, CheckNotEmpty('C'));
 }
 
-TEST_F(AdaptiveParserTest, TwoDigitsToNumber) {
-  auto parser = Adapted(StrictSeq(Digit(), Digit()), chars2int);
+TEST_F(AdaptiveParserTest, TwoDigitsToNumber1) {
+  TestParserSuccess("42", pTwoDigits(), 42, 2, CheckEmpty());
+}
 
-  TestParserSuccess("42", parser, 42, 2, CheckEmpty());
-  TestParserSuccess("131", parser, 13, 2, CheckNotEmpty('1'));
+TEST_F(AdaptiveParserTest, TwoDigitsToNumber2) {
+  TestParserSuccess("131", pTwoDigits(), 13, 2, CheckNotEmpty('1'));
 }
 
 TEST_F(AdaptiveParserTest, Memory) {
@@ -84,12 +71,17 @@ TEST_F(AdaptiveParserTest, Memory) {
     bool operator==(const A& other) const {
       return true;
     }
+
+    static A process_char(char c) {
+      return A();
+    }
+
+    static A process_other(A&& other) {
+      return A(std::forward<A>(other));
+    }
   };
 
-  std::function<A(char)> char2a{[](char c) { return A(); }};
-  std::function<A(A&&)> a2a{[](A&& a) { return A(std::forward<A>(a)); }};
-
-  auto parser = Adapted(Adapted(Digit(), char2a), a2a);
+  auto parser = Adapted(Adapted(Digit(), &A::process_char), &A::process_other);
   TestParserSuccess("0", parser, A(), 1, CheckEmpty());
 
   EXPECT_EQ(2, n);

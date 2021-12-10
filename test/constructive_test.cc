@@ -2,7 +2,7 @@
 
 #include <tuple>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/constructive.h"
 #include "pcomb/parser.h"
@@ -11,39 +11,40 @@
 
 using pcomb::Char;
 using pcomb::Construct;
-using pcomb::ParserPointerType;
+using pcomb::PointerToConstruct;
 using pcomb::Seq;
 
 class ConstructiveParserTest : public ::testing::Test {
  protected:
-  struct Pair {
-    char a;
-    char b;
+  static auto pPairAB() {
+    return Construct<Pair>(Seq(Char('A'), Char('B')));
+  }
 
-    bool operator==(const Pair& other) const {
-      return a == other.a && b == other.b;
-    }
-  };
+  static auto ppPairAB() {
+    return PointerToConstruct<Pair>(Seq(Char('A'), Char('B')));
+  }
+
+  static auto expectedPairAB() {
+    return Pair{'A', 'B'};
+  }
+
+ private:
+  using Pair = std::pair<char, char>;
 };
 
 TEST_F(ConstructiveParserTest, Empty) {
-  auto parser = Construct<Pair>(Seq(Char('A'), Char('B')));
-  TestParserFail("", parser);
+  TestParserFail("", pPairAB());
 }
 
 TEST_F(ConstructiveParserTest, Match) {
-  auto parser = Construct<Pair>(Seq(Char('A'), Char('B')));
-  TestParserSuccess("AB", parser, Pair{'A', 'B'}, 2, CheckEmpty());
+  TestParserSuccess("AB", pPairAB(), expectedPairAB(), 2, CheckEmpty());
 }
 
 TEST_F(ConstructiveParserTest, NotMatch) {
-  auto parser = Construct<Pair>(Seq(Char('A'), Char('B')));
-  TestParserFail("BA", parser);
+  TestParserFail("BA", pPairAB());
 }
 
 TEST_F(ConstructiveParserTest, PointerMatch) {
-  ParserPointerType<Pair> parser =
-      pcomb::PointerToConstruct<Pair>(Seq(Char('A'), Char('B')));
-  TestParserSuccess("AB", *parser, Pair{'A', 'B'}, 2, CheckEmpty());
+  TestParserSuccess("AB", *(ppPairAB()), expectedPairAB(), 2, CheckEmpty());
 }
 

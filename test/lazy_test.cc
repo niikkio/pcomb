@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"

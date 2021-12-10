@@ -3,7 +3,7 @@
 #include <list>
 #include <variant>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/alternative.h"
 #include "pcomb/many.h"

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/lexeme.h"
 #include "pcomb/predicate.h"
@@ -16,126 +16,156 @@ using pcomb::Word;
 
 class LexemeParserTest : public ::testing::Test {
  protected:
+  static auto pDigit() {
+    return Digit();
+  }
+
+  static auto pAinBrackets() {
+    return Inside('(', Char('A'), ')');
+  }
+
+  static auto pSpace() {
+    return Space();
+  }
+
+  static auto pLine() {
+    return Line();
+  }
+
+  static auto pNewLine() {
+    return NewLine();
+  }
+
+  static auto pEmptyString() {
+    return String("");
+  }
+
+  static auto pStringABC() {
+    return String("ABC");
+  }
+
+  static auto pWord() {
+    return Word();
+  }
+
   using Expected = std::list<char>;
 };
 
 TEST_F(LexemeParserTest, DigitFromEmpty) {
-  TestParserFail("", Digit());
+  TestParserFail("", pDigit());
 }
 
 TEST_F(LexemeParserTest, DigitMatch) {
-  TestParserSuccess("1B", Digit(), '1', 1, CheckNotEmpty('B'));
+  TestParserSuccess("1B", pDigit(), '1', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(LexemeParserTest, DigitNotMatch) {
-  TestParserFail("B1", Digit());
+  TestParserFail("B1", pDigit());
 }
 
 TEST_F(LexemeParserTest, InsideBracketsMatch) {
-  TestParserSuccess("(A)", Inside('(', Char('A'), ')'), 'A', 3, CheckEmpty());
+  TestParserSuccess("(A)", pAinBrackets(), 'A', 3, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, InsideBracketsNoOpen) {
-  TestParserFail("A)B", Inside('(', Char('A'), ')'));
+  TestParserFail("A)B", pAinBrackets());
 }
 
 TEST_F(LexemeParserTest, InsideBracketsNoClose) {
-  TestParserFail("(AB", Inside('(', Char('A'), ')'));
+  TestParserFail("(AB", pAinBrackets());
 }
 
 TEST_F(LexemeParserTest, SpaceFromEmpty) {
-  TestParserFail("", Space());
+  TestParserFail("", pSpace());
 }
 
 TEST_F(LexemeParserTest, SpaceNotMatch) {
-  TestParserFail("A", Space());
+  TestParserFail("A", pSpace());
 }
 
 TEST_F(LexemeParserTest, SpaceMatchSpace) {
-  TestParserSuccess(" A", Space(), ' ', 1, CheckNotEmpty('A'));
+  TestParserSuccess(" A", pSpace(), ' ', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, SpaceMatchTab) {
-  TestParserSuccess("\tA", Space(), '\t', 1, CheckNotEmpty('A'));
+  TestParserSuccess("\tA", pSpace(), '\t', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, SpaceMatchNewLine) {
-  TestParserSuccess("\nA", Space(), '\n', 1, CheckNotEmpty('A'));
+  TestParserSuccess("\nA", pSpace(), '\n', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, NewLineFromEmpty) {
-  TestParserFail("", NewLine());
+  TestParserFail("", pNewLine());
 }
 
 TEST_F(LexemeParserTest, NewLineNotMatch) {
-  TestParserFail("A", NewLine());
+  TestParserFail("A", pNewLine());
 }
 
 TEST_F(LexemeParserTest, NewLineMatch) {
-  TestParserSuccess("\nA", NewLine(), '\n', 1, CheckNotEmpty('A'));
+  TestParserSuccess("\nA", pNewLine(), '\n', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, StringFromEmpty) {
-  TestParserFail("", String("ABC"));
+  TestParserFail("", pStringABC());
 }
 
 TEST_F(LexemeParserTest, EmptyStringFromEmpty) {
-  TestParserSuccess("", String(""), "", 0, CheckEmpty());
+  TestParserSuccess("", pEmptyString(), "", 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, EmptyString) {
-  TestParserSuccess("AB", String(""),
-                    "", 0, CheckNotEmpty('A'));
+  TestParserSuccess("AB", pEmptyString(), "", 0, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, StringMatch) {
-  TestParserSuccess("ABC", String("ABC"),
-                    "ABC", 3, CheckEmpty());
+  TestParserSuccess("ABC", pStringABC(), "ABC", 3, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, StringNotMatch) {
-  TestParserFail("ADC", String("ABC"));
+  TestParserFail("ADC", pStringABC());
 }
 
 TEST_F(LexemeParserTest, LineFromEmpty) {
-  TestContainerParserSuccess("", Line(), Expected{}, 0, CheckEmpty());
+  TestContainerParserSuccess("", pLine(), Expected{}, 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, LineFromOneLineWithNewLine) {
-  TestContainerParserSuccess("AB\n", Line(),
+  TestContainerParserSuccess("AB\n", pLine(),
                              Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, LineFromOneLineWithoutNewLine) {
-  TestContainerParserSuccess("AB", Line(),
+  TestContainerParserSuccess("AB", pLine(),
                              Expected{'A', 'B'}, 2, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, LineFromManyLines) {
-  TestContainerParserSuccess("AB\nCD", Line(),
+  TestContainerParserSuccess("AB\nCD", pLine(),
                              Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, WordFromEmpty) {
-  TestContainerParserSuccess("", Word(), Expected{}, 0, CheckEmpty());
+  TestContainerParserSuccess("", pWord(), Expected{}, 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithoutSpace) {
-  TestContainerParserSuccess("AB", Word(),
+  TestContainerParserSuccess("AB", pWord(),
                              Expected{'A', 'B'}, 2, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithSpace) {
-  TestContainerParserSuccess("AB ", Word(),
+  TestContainerParserSuccess("AB ", pWord(),
                              Expected{'A', 'B'}, 2, CheckNotEmpty(' '));
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithNewLine) {
-  TestContainerParserSuccess("AB\n", Word(),
+  TestContainerParserSuccess("AB\n", pWord(),
                              Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithTab) {
-  TestContainerParserSuccess("AB\t", Word(),
+  TestContainerParserSuccess("AB\t", pWord(),
                              Expected{'A', 'B'}, 2, CheckNotEmpty('\t'));
 }

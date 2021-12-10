@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "common.h"
+#include "testing.h"
 
 #include "pcomb/many.h"
 #include "pcomb/predicate.h"

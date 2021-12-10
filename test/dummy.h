@@ -1,0 +1,4 @@
+#ifndef PCOMB_TEST_DUMMY_
+#define PCOMB_TEST_DUMMY_
+
+#endif  // PCOMB_TEST_DUMMY_

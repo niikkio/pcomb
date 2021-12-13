@@ -32,7 +32,7 @@ class OptionalParser : public Parser<typename P::CharType,
       return ResultType(0, ValueType());
     }
 
-    int consumed_number = result.get_consumed_number();
+    size_t consumed_number = result.get_consumed_number();
     return ResultType(consumed_number, std::move(result).get_value());
   }
 

@@ -38,7 +38,7 @@ class StrictAdaptiveParser
       return ResultType();
     }
 
-    int consumed_number = result.get_consumed_number();
+    size_t consumed_number = result.get_consumed_number();
     return ResultType(consumed_number, func_(std::move(result).get_value()));
   }
 

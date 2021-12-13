@@ -26,7 +26,7 @@ inline auto Maybe(P&& parser) {
 }
 
 template <typename P>
-inline auto Repeat(P&& parser, int count) {
+inline auto Repeat(P&& parser, size_t count) {
   return privates::ManyParser<std::remove_reference_t<P>>(
       std::forward<P>(parser), count, count);
 }

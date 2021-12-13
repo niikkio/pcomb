@@ -7,7 +7,7 @@ template <typename CharType>
 class IStream {
  public:
   virtual const CharType& head() const = 0;
-  virtual void consume(int n) = 0;
+  virtual void consume(size_t n) = 0;
   virtual bool empty() const = 0;
   virtual IStream* clone() const = 0;
   virtual ~IStream() = default;

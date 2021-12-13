@@ -13,7 +13,7 @@ class StringStream : public IStream<char> {
   explicit StringStream(std::string s);
 
   const char& head() const override;
-  void consume(int n) override;
+  void consume(size_t n) override;
   bool empty() const override;
   StringStream* clone() const override;
 
@@ -22,7 +22,7 @@ class StringStream : public IStream<char> {
   StringStream& operator=(const StringStream&) = default;
 
   const std::shared_ptr<const std::string> string_pointer_;
-  int begin_;
+  size_t begin_;
 };
 
 }  // namespace pcomb

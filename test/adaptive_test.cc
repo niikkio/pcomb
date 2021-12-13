@@ -62,17 +62,17 @@ TEST_F(AdaptiveParserTest, Memory) {
   struct A {
     A() { ++n; }
 
-    A(const A& other) { ++n_copy; }
-    A& operator=(const A& other) { ++n_copy; return *this; }
+    A(const A&) { ++n_copy; }
+    A& operator=(const A&) { ++n_copy; return *this; }
 
-    A(A&& other) { ++n_move; }
-    A& operator=(A&& other) { ++n_move; return *this; }
+    A(A&&) { ++n_move; }
+    A& operator=(A&&) { ++n_move; return *this; }
 
-    bool operator==(const A& other) const {
+    bool operator==(const A&) const {
       return true;
     }
 
-    static A process_char(char c) {
+    static A process_char(char) {
       return A();
     }
 

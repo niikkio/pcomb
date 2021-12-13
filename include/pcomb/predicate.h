@@ -16,12 +16,12 @@ inline auto Char(Ch ch) {
 template <typename Ch = char>
 inline auto AnyChar() {
   return privates::PredicateParser<Ch>(
-      [](Ch c) { return true; });
+      [](Ch) { return true; });
 }
 
 inline auto LatinChar() {
   return privates::PredicateParser<char>(
-      [](char c) { return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'; });
+      [](char c) { return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'); });
 }
 
 template <typename Ch>

@@ -69,7 +69,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
       auto result = std::get<I>(parsers).parse(stream);
       if (result.success()) {
-        int consumed = result.get_consumed_number();
+        size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::move(result).get_value()));
       }
       return RecursiveAlternativeParser<I+1>::parse(parsers, stream);
@@ -81,7 +81,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
       auto result = std::get<StorageSize-1>(parsers).parse(stream);
       if (result.success()) {
-        int consumed = result.get_consumed_number();
+        size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::move(result).get_value()));
       }
       return ResultType();

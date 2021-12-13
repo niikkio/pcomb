@@ -27,7 +27,7 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
   ResultType parse(StreamType* stream) const override {
     auto result = parser_.parse(stream);
     if (result.success()) {
-      int consumed_number = result.get_consumed_number();
+      size_t consumed_number = result.get_consumed_number();
       return ResultType(consumed_number, ValueType());
     }
     return ResultType();

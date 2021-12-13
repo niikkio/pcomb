@@ -22,11 +22,11 @@ class ManyParserTest : public ::testing::Test {
     return Some(Char('A'));
   }
 
-  static auto pRepeatA(int n) {
+  static auto pRepeatA(size_t n) {
     return Repeat(Char('A'), n);
   }
 
-  static auto expected(int n = 0) {
+  static auto expected(size_t n = 0) {
     return std::list<char>(n, 'A');
   }
 };

@@ -53,7 +53,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
       using TempType = typename RootParser::ValueType;
       constexpr size_t TempSize = std::tuple_size_v<TempType>;
 
-      int consumed_number = result.get_consumed_number();
+      size_t consumed_number = result.get_consumed_number();
       stream->consume(consumed_number);
 
       return ResultType(
@@ -90,7 +90,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number() +
+      size_t consumed = result.get_consumed_number() +
           next_result.get_consumed_number();
 
       return ResultType(consumed, std::tuple_cat(
@@ -123,7 +123,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number() +
+      size_t consumed = result.get_consumed_number() +
           next_result.get_consumed_number();
       return ResultType(consumed, std::move(next_result).get_value());
     }
@@ -144,7 +144,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number();
+      size_t consumed = result.get_consumed_number();
       return ResultType(consumed, ValueType(std::move(result).get_value()));
     }
   };
@@ -164,7 +164,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number();
+      size_t consumed = result.get_consumed_number();
       return ResultType(consumed, ValueType());
     }
   };

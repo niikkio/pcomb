@@ -33,7 +33,7 @@ class UntilParser : public UntilBaseType<P> {
     auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
     ValueType values;
-    int consumed_number = 0;
+    size_t consumed_number = 0;
     while (!parser_.parse(stream_copy.get()).success()) {
       if (stream_copy->empty()) {
         break;

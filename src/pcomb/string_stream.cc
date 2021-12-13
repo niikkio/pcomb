@@ -14,7 +14,7 @@ const char& StringStream::head() const {
   return string_pointer_->at(begin_);
 }
 
-void StringStream::consume(int n) {
+void StringStream::consume(size_t n) {
   begin_ += n;
 }
 

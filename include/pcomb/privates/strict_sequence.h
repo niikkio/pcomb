@@ -72,7 +72,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number() +
+      size_t consumed = result.get_consumed_number() +
           next_result.get_consumed_number();
       return ResultType(consumed, std::tuple_cat(
           WrappedValueType<I, StorageType>(std::move(result).get_value()),
@@ -95,7 +95,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
         return ResultType();
       }
 
-      int consumed = result.get_consumed_number();
+      size_t consumed = result.get_consumed_number();
       return ResultType(consumed, ValueType(std::move(result).get_value()));
     }
   };

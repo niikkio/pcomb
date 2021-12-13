@@ -12,7 +12,7 @@ class Result {
   Result() : storage_(std::nullopt), consumed_(0) { }
 
   template <typename T>
-  explicit Result(int consumed, T&& value)
+  explicit Result(size_t consumed, T&& value)
       : storage_(std::forward<T>(value)), consumed_(consumed) {
   }
 
@@ -28,13 +28,13 @@ class Result {
     return std::move(storage_.value());
   }
 
-  int get_consumed_number() const {
+  size_t get_consumed_number() const {
     return consumed_;
   }
 
  private:
   std::optional<ValueType> storage_;
-  int consumed_;
+  size_t consumed_;
 };
 
 }  // namespace pcomb

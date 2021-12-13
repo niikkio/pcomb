@@ -9,6 +9,27 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # windows specific
 FetchContent_MakeAvailable(googletest)
 
+add_compile_options(
+    -Werror
+
+    -Wall
+    -Wextra
+    -Wpedantic
+
+    -Wcast-align
+    -Wcast-qual
+    -Wconversion
+    -Wctor-dtor-privacy
+    -Wenum-compare
+    -Wfloat-equal
+    -Wnon-virtual-dtor
+    -Wold-style-cast
+    -Woverloaded-virtual
+    -Wredundant-decls
+    -Wsign-conversion
+    -Wsign-promo
+)
+
 file(GLOB TEST_SOURCE_FILES "*.cc")
 add_executable(core_test ${TEST_SOURCE_FILES})
 

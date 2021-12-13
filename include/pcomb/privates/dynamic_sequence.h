@@ -36,7 +36,7 @@ class DynamicSequenceParser : public Parser<
     auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
     ValueType values;
-    int consumed_number = 0;
+    size_t consumed_number = 0;
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
       auto result = it->parse(stream_copy.get());
       if (!result.success()) {

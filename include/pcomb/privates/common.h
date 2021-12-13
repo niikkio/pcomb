@@ -177,5 +177,5 @@ struct WithoutDuplicates {
 template <typename TV>
 using WithoutDuplicatesType = typename WithoutDuplicates<TV>::Type;
 
-};  // namespace pcomb::privates
+}  // namespace pcomb::privates
 #endif  // PCOMB_PRIVATES_COMMON_H_

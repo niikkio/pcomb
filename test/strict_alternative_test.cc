@@ -14,60 +14,82 @@ using pcomb::Many;
 using pcomb::Some;
 using pcomb::StrictAny;
 
-class StrictAlternativeParserTest : public ::testing::Test { };
+class StrictAlternativeParserTest : public ::testing::Test {
+ protected:
+  static auto pA() {
+    return StrictAny(Char('A'));
+  }
+
+  static auto expectedA() {
+    return std::variant<char>{std::in_place_index<0>, 'A'};
+  }
+
+  static auto pABC() {
+    return StrictAny(Char('A'), Char('B'), Char('C'));
+  }
+
+  static auto expectedABC_A() {
+    return std::variant<char, char, char>{std::in_place_index<0>, 'A'};
+  }
+
+  static auto expectedABC_B() {
+    return std::variant<char, char, char>{std::in_place_index<1>, 'B'};
+  }
+
+  static auto expectedABC_C() {
+    return std::variant<char, char, char>{std::in_place_index<2>, 'C'};
+  }
+
+  static auto pABs() {
+    return StrictAny(Char('A'), Some(Char('B')));
+  }
+
+  static auto expectedABs_A() {
+    return std::variant<char, std::list<char>>{std::in_place_index<0>, 'A'};
+  }
+
+  static auto expectedABs_Bs(size_t n) {
+    return std::variant<char, std::list<char>>{
+      std::in_place_index<1>, std::list<char>(n, 'B')};
+  }
+
+  static auto pManyAsBs() {
+    return Many(StrictAny(Some(Char('A')), Some(Char('B'))));
+  }
+};
 
 TEST_F(StrictAlternativeParserTest, SingleMatch) {
-  TestParserSuccess("A", StrictAny(Char('A')),
-                    std::variant<char>{std::in_place_index<0>, 'A'}, 1,
-                    CheckEmpty());
+  TestParserSuccess("A", pA(), expectedA(), 1, CheckEmpty());
 }
 
 TEST_F(StrictAlternativeParserTest, SingleNotMatch) {
-  TestParserFail("B", StrictAny(Char('A')));
+  TestParserFail("B", pA());
 }
 
 TEST_F(StrictAlternativeParserTest, Take1) {
-  using Expected = std::variant<char, char, char>;
-  TestParserSuccess("ABC", StrictAny(Char('A'), Char('B'), Char('C')),
-                    Expected{std::in_place_index<0>, 'A'}, 1,
-                    CheckNotEmpty('B'));
+  TestParserSuccess("ABC", pABC(), expectedABC_A(), 1, CheckNotEmpty('B'));
 }
 
 TEST_F(StrictAlternativeParserTest, Take2) {
-  using Expected = std::variant<char, char, char>;
-  TestParserSuccess("BCA", StrictAny(Char('A'), Char('B'), Char('C')),
-                    Expected{std::in_place_index<1>, 'B'}, 1,
-                    CheckNotEmpty('C'));
+  TestParserSuccess("BCA", pABC(), expectedABC_B(), 1, CheckNotEmpty('C'));
 }
 
 TEST_F(StrictAlternativeParserTest, Take3) {
-  using Expected = std::variant<char, char, char>;
-  TestParserSuccess("CAB", StrictAny(Char('A'), Char('B'), Char('C')),
-                    Expected{std::in_place_index<2>, 'C'}, 1,
-                    CheckNotEmpty('A'));
+  TestParserSuccess("CAB", pABC(), expectedABC_C(), 1, CheckNotEmpty('A'));
 }
 
 TEST_F(StrictAlternativeParserTest, TakeOneOrMany1) {
-  using Expected = std::variant<char, std::list<char>>;
-  TestParserSuccess("ABBB", StrictAny(Char('A'), Some(Char('B'))),
-                    Expected{std::in_place_index<0>, 'A'}, 1,
-                    CheckNotEmpty('B'));
+  TestParserSuccess("ABBB", pABs(), expectedABs_A(), 1, CheckNotEmpty('B'));
 }
 
 TEST_F(StrictAlternativeParserTest, TakeOneOrMany2) {
-  using Expected = std::variant<char, std::list<char>>;
-  TestParserSuccess(
-      "BBBA", StrictAny(Char('A'), Some(Char('B'))),
-      Expected{std::in_place_index<1>, std::list<char>{'B', 'B', 'B'}}, 3,
-      CheckNotEmpty('A'));
+  TestParserSuccess("BBBA", pABs(), expectedABs_Bs(3), 3, CheckNotEmpty('A'));
 }
 
 TEST_F(StrictAlternativeParserTest, ManyAlternatives) {
   using L = std::list<char>;
   using V = std::variant<L, L>;
   using E = std::list<V>;
-
-  auto parser = Many(StrictAny(Some(Char('A')), Some(Char('B'))));
 
   auto expected = E{
     V{std::in_place_index<1>, L{'B', 'B'}},
@@ -77,5 +99,6 @@ TEST_F(StrictAlternativeParserTest, ManyAlternatives) {
     V{std::in_place_index<1>, L{'B', 'B', 'B'}}
   };
 
-  TestContainerParserSuccess("BBAAABAABBB", parser, expected, 11, CheckEmpty());
+  TestContainerParserSuccess(
+      "BBAAABAABBB", pManyAsBs(), expected, 11, CheckEmpty());
 }

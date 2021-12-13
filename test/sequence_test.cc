@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <list>
 #include <tuple>
 
 #include "testing.h"
@@ -13,56 +12,77 @@ using pcomb::Char;
 using pcomb::Seq;
 using pcomb::Skip;
 
-class SequenceParserTest : public ::testing::Test { };
+class SequenceParserTest : public ::testing::Test {
+ protected:
+  static auto pA() {
+    return Seq(Char('A'));
+  }
+
+  static auto expectedA() {
+    return 'A';
+  }
+
+  static auto pABC() {
+    return Seq(Char('A'), Char('B'), Char('C'));
+  }
+
+  static auto expectedABC() {
+    return std::tuple<char, char, char>('A', 'B', 'C');
+  }
+
+  static auto pSkippedASkippedB() {
+    return Seq(Skip(Char('A')), Skip(Char('B')));
+  }
+
+  static auto expectedSkippedASkippedB() {
+    return decltype(pSkippedASkippedB())::ValueType();
+  }
+
+  static auto pABCwithSkippedBraces() {
+      return Seq(
+          Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
+  }
+};
 
 TEST_F(SequenceParserTest, Seq1Match) {
-  TestParserSuccess("A", Seq(Char('A')), 'A', 1, CheckEmpty());
+  TestParserSuccess("A", pA(), expectedA(), 1, CheckEmpty());
 }
 
 TEST_F(SequenceParserTest, Seq1NotMatch) {
-  TestParserFail("B", Seq(Char('A')));
+  TestParserFail("B", pA());
 }
 
 TEST_F(SequenceParserTest, Seq3Match) {
-  auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  using Expected = std::tuple<char, char, char>;
-  TestParserSuccess("ABC", parser, Expected{'A', 'B', 'C'}, 3, CheckEmpty());
+  TestParserSuccess("ABC", pABC(), expectedABC(), 3, CheckEmpty());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch1) {
-  auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  TestParserFail("", parser);
+  TestParserFail("", pABC());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch2) {
-  auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  TestParserFail("A", parser);
+  TestParserFail("A", pABC());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch3) {
-  auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  TestParserFail("AB", parser);
+  TestParserFail("AB", pABC());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch4) {
-  auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  TestParserFail("ABB", parser);
+  TestParserFail("ABB", pABC());
 }
 
 TEST_F(SequenceParserTest, Skip2) {
-  auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
-  using Expected = decltype(parser)::ValueType;
-  TestParserSuccess("ABC", parser, Expected{}, 2, CheckNotEmpty('C'));
+  TestParserSuccess("ABC", pSkippedASkippedB(),
+                    expectedSkippedASkippedB(), 2,
+                    CheckNotEmpty('C'));
 }
 
 TEST_F(SequenceParserTest, Skip2NotEnough) {
-  auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
-  TestParserFail("A", parser);
+  TestParserFail("A", pSkippedASkippedB());
 }
 
 TEST_F(SequenceParserTest, Brackets) {
-  auto parser = Seq(
-      Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
-  using Expected = std::tuple<char, char, char>;
-  TestParserSuccess("(ABC)", parser, Expected{'A', 'B', 'C'}, 5, CheckEmpty());
+  TestParserSuccess("(ABC)", pABCwithSkippedBraces(),
+                    expectedABC(), 5, CheckEmpty());
 }

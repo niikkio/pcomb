@@ -13,37 +13,47 @@ using pcomb::StrictSeq;
 
 class StrictSequenceParserTest : public ::testing::Test {
  protected:
-  using Expected1 = std::tuple<char>;
-  using Expected2 = std::tuple<char, char>;
-  using Expected3 = std::tuple<char, char, char>;
+  static auto pA() {
+    return StrictSeq(Char('A'));
+  }
+
+  static auto expectedA() {
+    return std::tuple<char>{'A'};
+  }
+
+  static auto pABC() {
+    return StrictSeq(Char('A'), Char('B'), Char('C'));
+  }
+
+  static auto expectedABC() {
+    return std::tuple<char, char, char>('A', 'B', 'C');
+  }
 };
 
 TEST_F(StrictSequenceParserTest, Seq1Match) {
-  TestParserSuccess("A", StrictSeq(Char('A')), Expected1{'A'}, 1, CheckEmpty());
+  TestParserSuccess("A", pA(), expectedA(), 1, CheckEmpty());
 }
 
 TEST_F(StrictSequenceParserTest, Seq1NotMatch) {
-  TestParserFail("B", StrictSeq(Char('A')));
+  TestParserFail("B", pA());
 }
 
 TEST_F(StrictSequenceParserTest, Seq3Match) {
-  TestParserSuccess("ABC", StrictSeq(Char('A'), Char('B'), Char('C')),
-                    Expected3{'A', 'B', 'C'}, 3,
-                    CheckEmpty());
+  TestParserSuccess("ABC", pABC(), expectedABC(), 3, CheckEmpty());
 }
 
 TEST_F(StrictSequenceParserTest, Seq3NotMatch1) {
-  TestParserFail("", StrictSeq(Char('A'), Char('B'), Char('C')));
+  TestParserFail("", pABC());
 }
 
 TEST_F(StrictSequenceParserTest, Seq3NotMatch2) {
-  TestParserFail("A", StrictSeq(Char('A'), Char('B'), Char('C')));
+  TestParserFail("A", pABC());
 }
 
 TEST_F(StrictSequenceParserTest, Seq3NotMatch3) {
-  TestParserFail("AB", StrictSeq(Char('A'), Char('B'), Char('C')));
+  TestParserFail("AB", pABC());
 }
 
 TEST_F(StrictSequenceParserTest, Seq3NotMatch4) {
-  TestParserFail("ABB", StrictSeq(Char('A'), Char('B'), Char('C')));
+  TestParserFail("ABB", pABC());
 }

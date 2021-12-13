@@ -12,19 +12,23 @@ using pcomb::Until;
 
 class UntilParserTest : public ::testing::Test {
  protected:
+  static auto pA() {
+    return Until(Char('A'));
+  }
+
   using Expected = std::list<char>;
 };
 
 TEST_F(UntilParserTest, Empty) {
-  TestContainerParserSuccess("", Until(Char('A')), Expected{}, 0, CheckEmpty());
+  TestContainerParserSuccess("", pA(), Expected{}, 0, CheckEmpty());
 }
 
 TEST_F(UntilParserTest, EmptyMatch) {
-  TestContainerParserSuccess("A", Until(Char('A')),
-                             Expected{}, 0, CheckNotEmpty('A'));
+  TestContainerParserSuccess(
+      "A", pA(), Expected{}, 0, CheckNotEmpty('A'));
 }
 
 TEST_F(UntilParserTest, Match) {
-  TestContainerParserSuccess("BCA", Until(Char('A')),
-                             Expected{'B', 'C'}, 2, CheckNotEmpty('A'));
+  TestContainerParserSuccess(
+      "BCA", pA(), Expected{'B', 'C'}, 2, CheckNotEmpty('A'));
 }

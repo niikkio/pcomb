@@ -17,12 +17,20 @@ class StringStream : public IStream<char> {
   bool empty() const override;
   StringStream* clone() const override;
 
+  std::string position() const override;
+
  private:
+  struct Position {
+    size_t index;
+    size_t row;
+    size_t column;
+  };
+
   StringStream(const StringStream&) = default;
   StringStream& operator=(const StringStream&) = default;
 
   const std::shared_ptr<const std::string> string_pointer_;
-  size_t begin_;
+  Position pos_;
 };
 
 }  // namespace pcomb

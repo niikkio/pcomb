@@ -64,12 +64,18 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
       auto result = std::get<I>(parsers).parse(stream);
       if (!result.success()) {
-        return ResultType();
+        return ResultType(Trace("StrictSequence",
+                                stream->position(),
+                                "",
+                                {std::move(result).get_trace()}));
       }
 
       auto next_result = RecursiveSequenceParser<I+1>::parse(parsers, stream);
       if (!next_result.success()) {
-        return ResultType();
+        return ResultType(Trace("StrictSequence",
+                                stream->position(),
+                                "",
+                                {std::move(next_result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -92,7 +98,10 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
       auto result = std::get<StorageSize-1>(parsers).parse(stream);
       if (!result.success()) {
-        return ResultType();
+        return ResultType(Trace("StrictSequence",
+                                stream->position(),
+                                "",
+                                {std::move(result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number();

@@ -101,13 +101,19 @@ inline void TestParserSuccess(std::string input,
 }
 
 template <typename Parser>
-inline void TestParserFail(std::string input, const Parser& parser) {
+inline void TestParserFail(std::string input,
+                           const Parser& parser,
+                           const std::string& expected_trace = "") {
   pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
   auto res = parser.parse(&s);
   EXPECT_FALSE(res.success());
   EXPECT_EQ(res.get_consumed_number(), 0);
+
+  if (expected_trace.size() > 0) {
+    EXPECT_EQ(res.get_trace().to_string(), expected_trace);
+  }
 
   check(s);
 }

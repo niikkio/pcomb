@@ -4,6 +4,7 @@
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/trace.h"
 #include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
@@ -21,7 +22,7 @@ class EndParser : public Parser<C, NoValue> {
  public:
   ResultType parse(StreamType* stream) const override {
     if (!stream->empty()) {
-      return ResultType();
+      return ResultType(Trace("End", stream->position(), "EOF expected"));
     }
 
     return ResultType(0, ValueType());

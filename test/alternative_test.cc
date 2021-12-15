@@ -63,6 +63,17 @@ TEST_F(AlternativeParserTest, SingleNotMatch) {
   TestParserFail("B", pA());
 }
 
+TEST_F(AlternativeParserTest, NotMatch) {
+  auto expected = "Alternative Parser failed at [0,0,0]\n"
+                  "\tPredicate Parser failed at [0,0,0] "
+                  "[unexpected character: \'D\']\n"
+                  "\tPredicate Parser failed at [0,0,0] "
+                  "[unexpected character: \'D\']\n"
+                  "\tPredicate Parser failed at [0,0,0] "
+                  "[unexpected character: \'D\']\n";
+  TestParserFail("D", pABC(), expected);
+}
+
 TEST_F(AlternativeParserTest, Take1) {
   TestParserSuccess("ABC", pABC(), 'A', 1, CheckNotEmpty('B'));
 }

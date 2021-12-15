@@ -8,6 +8,7 @@
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/trace.h"
 
 namespace pcomb::privates {
 
@@ -74,7 +75,11 @@ class ManyParser : public ManyBaseType<P> {
       stream->consume(consumed_number);
       return ResultType(consumed_number, std::move(values));
     }
-    return ResultType();
+    auto message = "not enough results: " +
+                   std::to_string(min_count_) + " > " +
+                   std::to_string(values.size());
+
+    return ResultType(Trace("Many", stream->position(), message));
   }
 
  private:

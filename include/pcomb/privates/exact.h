@@ -2,11 +2,13 @@
 #define PCOMB_PRIVATES_EXACT_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/trace.h"
 
 namespace pcomb::privates {
 
@@ -29,8 +31,18 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
     auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
     auto result = parser_.parse(stream_copy.get());
-    if (!result.success() || !stream_copy->empty()) {
-      return ResultType();
+    if (!result.success()) {
+      return ResultType(Trace("Exact",
+                              stream->position(),
+                              "",
+                              {std::move(result).get_trace()}));
+    }
+
+    if (!stream_copy->empty()) {
+      auto message = "unexpected characters at the end: \'" +
+                     std::string(1, stream_copy->head()) + "...\' at " +
+                     stream_copy->position();
+      return ResultType(Trace("Exact", stream->position(), message));
     }
 
     stream->consume(result.get_consumed_number());

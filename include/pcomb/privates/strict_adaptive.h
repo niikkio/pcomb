@@ -8,6 +8,7 @@
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/trace.h"
 
 namespace pcomb::privates {
 
@@ -35,7 +36,10 @@ class StrictAdaptiveParser
   ResultType parse(StreamType* stream) const override {
     auto result = parser_.parse(stream);
     if (!result.success()) {
-      return ResultType();
+      return ResultType(Trace("StrictAdaptive",
+                              stream->position(),
+                              "",
+                              {std::move(result).get_trace()}));
     }
 
     size_t consumed_number = result.get_consumed_number();

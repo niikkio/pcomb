@@ -2,11 +2,13 @@
 #define PCOMB_PRIVATES_PREDICATE_H_
 
 #include <functional>
+#include <string>
 #include <utility>
 
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
+#include "pcomb/trace.h"
 
 namespace pcomb::privates {
 
@@ -28,7 +30,8 @@ class PredicateParser : public Parser<T, T> {
 
   ResultType parse(StreamType* stream) const override {
     if (stream->empty()) {
-      return ResultType();
+      auto message = "characters not found";
+      return ResultType(Trace("Predicate", stream->position(), message));
     }
 
     CharType ch(stream->head());
@@ -37,7 +40,8 @@ class PredicateParser : public Parser<T, T> {
       return ResultType(1, std::move(ch));
     }
 
-    return ResultType();
+    auto message = "unexpected character: \'" + std::string(1, ch) + "\'";
+    return ResultType(Trace("Predicate", stream->position(), message));
   }
 
  private:

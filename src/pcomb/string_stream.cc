@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 
+#include "pcomb/stream_position.h"
+
 namespace pcomb {
 
 StringStream::StringStream(std::string source)
@@ -37,14 +39,8 @@ StringStream* StringStream::clone() const {
   return new StringStream(*this);
 }
 
-std::string StringStream::position() const {
-  std::stringstream ss;
-  ss << '[' << pos_.index
-     << ',' << pos_.row
-     << ',' << pos_.column
-     << ']';
-
-  return ss.str();
+StreamPosition StringStream::position() const {
+  return pos_;
 }
 
 }  // namespace pcomb

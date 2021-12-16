@@ -92,7 +92,10 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
         return ResultType(consumed, ValueType(std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return ResultType(Trace("Alternative", stream->position(), "", *log));
+      return ResultType(Trace("Alternative",
+                              stream->position(),
+                              "",
+                              std::move(*log)));
     }
   };
 

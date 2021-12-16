@@ -4,20 +4,24 @@
 #include <list>
 #include <string>
 
+#include "pcomb/stream_position.h"
+
 namespace pcomb {
 
 class Trace {
  public:
   Trace(const std::string& parser_name,
-        const std::string& position,
-        const std::string& message = "",
-        const std::list<Trace>& nested = {});
+        StreamPosition&& position,
+        std::string&& message = "",
+        std::list<Trace>&& nested = {});
 
   std::string to_string(size_t nesting_level = 0) const;
 
  private:
-  std::list<Trace> nested_;
+  std::string parser_name_;
+  StreamPosition position_;
   std::string message_;
+  std::list<Trace> nested_;
 };
 
 }  // namespace pcomb

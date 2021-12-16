@@ -41,7 +41,9 @@ class PredicateParser : public Parser<T, T> {
     }
 
     auto message = "unexpected character: \'" + std::string(1, ch) + "\'";
-    return ResultType(Trace("Predicate", stream->position(), message));
+    return ResultType(Trace("Predicate",
+                            stream->position(),
+                            std::move(message)));
   }
 
  private:

@@ -78,7 +78,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
       return ResultType(Trace("StrictAlternative",
                               stream->position(),
                               "",
-                              *log));
+                              std::move(*log)));
     }
   };
 

@@ -9,9 +9,11 @@
 #include <string>
 #include <utility>
 
+#include "pcomb/stream_position.h"
 #include "pcomb/string_stream.h"
 
 using StreamCheck = std::function<void(const pcomb::StringStream&)>;
+using StreamPosition = pcomb::StreamPosition;
 
 inline StreamCheck CheckEmpty() {
   return [](const pcomb::StringStream& s) {
@@ -26,25 +28,20 @@ inline StreamCheck CheckNotEmpty(char head) {
          };
 }
 
-inline std::string OkPosition(const std::string& input,
+inline StreamPosition OkPosition(const std::string& input,
                               size_t expected_consumed_number) {
-  size_t line = 0, column = expected_consumed_number, from = 0, pos;
-  while ((pos = input.find('\n', from)) != std::string::npos) {
-    if (pos >= expected_consumed_number) {
+  StreamPosition pos{expected_consumed_number, 0, expected_consumed_number};
+  size_t from = 0, i;
+  while ((i = input.find('\n', from)) != std::string::npos) {
+    if (i >= expected_consumed_number) {
       break;
     }
-    line += 1;
-    from = pos + 1;
-    column = expected_consumed_number - from;
+    pos.row += 1;
+    from = i + 1;
   }
+  pos.column = expected_consumed_number - from;
 
-  std::stringstream ss;
-  ss << '[' << expected_consumed_number
-     << ',' << line
-     << ',' << column
-     << ']';
-
-  return ss.str();
+  return pos;
 }
 
 template <typename Parser, typename Expected>

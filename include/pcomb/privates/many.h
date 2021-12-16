@@ -79,7 +79,7 @@ class ManyParser : public ManyBaseType<P> {
                    std::to_string(min_count_) + " > " +
                    std::to_string(values.size());
 
-    return ResultType(Trace("Many", stream->position(), message));
+    return ResultType(Trace("Many", stream->position(), std::move(message)));
   }
 
  private:

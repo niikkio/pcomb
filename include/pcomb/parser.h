@@ -2,6 +2,7 @@
 #define PCOMB_PARSER_H_
 
 #include <memory>
+#include <string>
 
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -17,6 +18,18 @@ class Parser {
   virtual ~Parser() = default;
 
   virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
+
+  std::string name() const {
+    return name_;
+  }
+
+  Parser& with_name(const std::string& name) {
+    name_ = name;
+    return *this;
+  }
+
+ private:
+  std::string name_ = "Base";
 };
 
 template <typename T, typename C = char>

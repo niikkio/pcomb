@@ -1,6 +1,7 @@
 #ifndef PCOMB_PRIVATES_ALTERNATIVE_H_
 #define PCOMB_PRIVATES_ALTERNATIVE_H_
 
+#include <functional>
 #include <list>
 #include <tuple>
 #include <utility>
@@ -51,6 +52,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
   using StreamType = IStream<CharType>;
   using StorageType = std::tuple<P1, PS...>;
   using LogType = std::list<Trace>;
+  using TraceBuilderType = std::function<Trace(StreamType*, LogType*)>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
@@ -64,38 +66,45 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
 
   ResultType parse(StreamType* stream) const override {
     LogType log;
-    return RecursiveAlternativeParser<0>::parse(parsers_, stream, &log);
+    auto trace_builder = TraceBuilderType(
+        [this](StreamType* stream, LogType* log) {
+          return Trace(this->name(), stream->position(), "", std::move(*log));
+        });
+    return RecursiveAlternativeParser<0>::parse(
+        parsers_, stream, &log, trace_builder);
   }
 
  private:
   template <size_t I, bool Dummy = true>
   struct RecursiveAlternativeParser {
-    static ResultType parse(
-          const StorageType& parsers, StreamType* stream, LogType* log) {
+    static ResultType parse(const StorageType& parsers,
+                            StreamType* stream,
+                            LogType* log,
+                            const TraceBuilderType& trace_builder) {
       auto result = std::get<I>(parsers).parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return RecursiveAlternativeParser<I+1>::parse(parsers, stream, log);
+      return RecursiveAlternativeParser<I+1>::parse(
+          parsers, stream, log, trace_builder);
     }
   };
 
   template <bool Dummy>
   struct RecursiveAlternativeParser<StorageSize-1, Dummy> {
-    static ResultType parse(
-        const StorageType& parsers, StreamType* stream, LogType* log) {
+    static ResultType parse(const StorageType& parsers,
+                            StreamType* stream,
+                            LogType* log,
+                            const TraceBuilderType& trace_builder) {
       auto result = std::get<StorageSize-1>(parsers).parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return ResultType(Trace("Alternative",
-                              stream->position(),
-                              "",
-                              std::move(*log)));
+      return ResultType(trace_builder(stream, log));
     }
   };
 

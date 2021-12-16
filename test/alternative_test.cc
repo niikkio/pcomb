@@ -64,14 +64,14 @@ TEST_F(AlternativeParserTest, SingleNotMatch) {
 }
 
 TEST_F(AlternativeParserTest, NotMatch) {
-  auto expected = "Alternative Parser failed at [0,0,0]\n"
+  auto expected = "(A|B|C) Parser failed at [0,0,0]\n"
                   "\tPredicate Parser failed at [0,0,0] "
                   "[unexpected character: \'D\']\n"
                   "\tPredicate Parser failed at [0,0,0] "
                   "[unexpected character: \'D\']\n"
                   "\tPredicate Parser failed at [0,0,0] "
                   "[unexpected character: \'D\']\n";
-  TestParserFail("D", pABC(), expected);
+  TestParserFail("D", pABC().with_name("(A|B|C)"), expected);
 }
 
 TEST_F(AlternativeParserTest, Take1) {

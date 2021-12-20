@@ -2,6 +2,7 @@
 
 #include <list>
 #include <variant>
+#include <sstream>
 
 #include "testing.h"
 
@@ -20,6 +21,14 @@ class AlternativeParserTest : public ::testing::Test {
  protected:
   static auto pA() {
     return Any(Char('A'));
+  }
+
+  static auto traceA(char ch) {
+    std::stringstream ss;
+    ss << "Parser failed at [0,0,0]\n"
+       << "\tPredicate failed at [0,0,0]"
+       << " [unexpected character: \'" << ch << "\']\n";
+    return ss.str();
   }
 
   static auto pABC() {
@@ -60,18 +69,18 @@ TEST_F(AlternativeParserTest, SingleMatch) {
 }
 
 TEST_F(AlternativeParserTest, SingleNotMatch) {
-  TestParserFail("B", pA());
+  TestParserFail("B", pA(), traceA('B'));
 }
 
 TEST_F(AlternativeParserTest, NotMatch) {
-  auto expected = "(A|B|C) Parser failed at [0,0,0]\n"
-                  "\tPredicate Parser failed at [0,0,0] "
+  auto expected = "Parser failed at [0,0,0]\n"
+                  "\tPredicate failed at [0,0,0] "
                   "[unexpected character: \'D\']\n"
-                  "\tPredicate Parser failed at [0,0,0] "
+                  "\tPredicate failed at [0,0,0] "
                   "[unexpected character: \'D\']\n"
-                  "\tPredicate Parser failed at [0,0,0] "
+                  "\tPredicate failed at [0,0,0] "
                   "[unexpected character: \'D\']\n";
-  TestParserFail("D", pABC().with_name("(A|B|C)"), expected);
+  TestParserFail("D", pABC(), expected);
 }
 
 TEST_F(AlternativeParserTest, Take1) {

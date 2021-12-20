@@ -21,7 +21,7 @@ Trace::Trace(const std::string& parser_name,
 std::string Trace::to_string(size_t nesting_level) const {
   std::stringstream ss;
   ss << std::string(nesting_level, '\t')
-     << parser_name_ << " Parser failed at " << position_.to_string();
+     << parser_name_ << " failed at " << position_.to_string();
 
   if (message_.size() > 0) {
     ss << " [" << message_ << ']';

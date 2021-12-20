@@ -23,13 +23,8 @@ class Parser {
     return name_;
   }
 
-  Parser& with_name(const std::string& name) {
-    name_ = name;
-    return *this;
-  }
-
  private:
-  std::string name_ = "Base";
+  std::string name_ = "Parser";
 };
 
 template <typename T, typename C = char>

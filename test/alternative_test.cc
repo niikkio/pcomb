@@ -20,12 +20,12 @@ using pcomb::Some;
 class AlternativeParserTest : public ::testing::Test {
  protected:
   static auto pA() {
-    return Any(Char('A'));
+    return with_name(Any(Char('A')), "A");
   }
 
   static auto traceA(char ch) {
     std::stringstream ss;
-    ss << "Parser failed at [0,0,0]\n"
+    ss << "A failed at [0,0,0]\n"
        << "\tPredicate failed at [0,0,0]"
        << " [unexpected character: \'" << ch << "\']\n";
     return ss.str();

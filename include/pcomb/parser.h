@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -23,15 +24,15 @@ class Parser {
     return name_;
   }
 
+  friend std::shared_ptr<Parser>&& with_name(
+      std::shared_ptr<Parser>&& p, const std::string& name) {
+    p->name_ = name;
+    return std::forward<std::shared_ptr<Parser>>(p);
+  }
+
  private:
   std::string name_ = "Parser";
 };
-
-template <typename T, typename C = char>
-using ParserType = Parser<C, T>;
-
-template <typename T, typename C = char>
-using ParserPointerType = std::shared_ptr<ParserType<T, C>>;
 
 }  // namespace pcomb
 #endif  // PCOMB_PARSER_H_

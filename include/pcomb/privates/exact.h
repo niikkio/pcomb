@@ -23,14 +23,13 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit ExactParser(const P& p) : parser_(p) { }
-
-  explicit ExactParser(P&& p) : parser_(std::forward<P>(p)) { }
+  explicit ExactParser(std::shared_ptr<P>&& p)
+      : parser_(std::forward<std::shared_ptr<P>>(p)) { }
 
   ResultType parse(StreamType* stream) const override {
     auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
-    auto result = parser_.parse(stream_copy.get());
+    auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
       return ResultType(Trace("Exact",
                               stream->position(),
@@ -50,7 +49,7 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
   }
 
  private:
-  P parser_;
+  std::shared_ptr<P> parser_;
 };
 
 }  // namespace pcomb::privates

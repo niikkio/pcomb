@@ -26,16 +26,14 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::tuple<P1, PS...>;
+  using ParsersType = std::tuple<P1, PS...>;
+  using StorageType = std::tuple<std::shared_ptr<P1>, std::shared_ptr<PS>...>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
-  explicit StrictSequenceParser(const P1& p1, const PS&... ps)
-      : parsers_(std::make_tuple(p1, ps...)) {
-  }
-
-  explicit StrictSequenceParser(P1&& p1, PS&&... ps)
-      : parsers_(std::forward_as_tuple(p1, ps...)) {
+  explicit StrictSequenceParser(
+      std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps)
+          : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -54,7 +52,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   class RecursiveSequenceParser {
    public:
     using ValueType = ConcatedType<
-        typename std::tuple_element_t<I, StorageType>::ValueType,
+        typename std::tuple_element_t<I, ParsersType>::ValueType,
         typename RecursiveSequenceParser<I+1>::ValueType>;
 
    private:
@@ -62,7 +60,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
 
    public:
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<I>(parsers).parse(stream);
+      auto result = std::get<I>(parsers)->parse(stream);
       if (!result.success()) {
         return ResultType(Trace("StrictSequence",
                                 stream->position(),
@@ -81,7 +79,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
       size_t consumed = result.get_consumed_number() +
           next_result.get_consumed_number();
       return ResultType(consumed, std::tuple_cat(
-          WrappedValueType<I, StorageType>(std::move(result).get_value()),
+          WrappedValueType<I, ParsersType>(std::move(result).get_value()),
           std::move(next_result).get_value()));
     }
   };
@@ -89,14 +87,14 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   template <bool Dummy>
   class RecursiveSequenceParser<StorageSize-1, Dummy> {
    public:
-    using ValueType = WrappedValueType<StorageSize-1, StorageType>;
+    using ValueType = WrappedValueType<StorageSize-1, ParsersType>;
 
    private:
     using ResultType = Result<ValueType>;
 
    public:
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<StorageSize-1>(parsers).parse(stream);
+      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
       if (!result.success()) {
         return ResultType(Trace("StrictSequence",
                                 stream->position(),

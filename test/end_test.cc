@@ -13,7 +13,7 @@ class EndParserTest : public ::testing::Test {
   }
 
   static auto expectedEnd() {
-    return decltype(pEnd())::ValueType();
+    return decltype(pEnd())::element_type::ValueType();
   }
 };
 

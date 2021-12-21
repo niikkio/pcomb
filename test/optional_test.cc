@@ -9,7 +9,7 @@
 
 using pcomb::Char;
 using pcomb::Opt;
-using pcomb::ParseOrDefault;
+using pcomb::ParseWithDefault;
 
 class OptionalParserTest : public ::testing::Test {
  protected:
@@ -18,7 +18,7 @@ class OptionalParserTest : public ::testing::Test {
   }
 
   static auto pAB() {
-    return ParseOrDefault(Char('A'), 'B');
+    return ParseWithDefault(Char('A'), 'B');
   }
 
   using ExpectedA = std::optional<char>;

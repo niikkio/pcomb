@@ -6,6 +6,7 @@
 #include <functional>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -21,7 +22,7 @@
 namespace pcomb {
 
 inline auto Digit() {
-  return privates::PredicateParser<char>(
+  return std::make_shared<privates::PredicateParser<char>>(
       [](char c) { return '0' <= c && c <= '9'; });
 }
 
@@ -30,17 +31,19 @@ inline auto NewLine() {
 }
 
 inline auto Space() {
-  return privates::PredicateParser<char>(
+  return std::make_shared<privates::PredicateParser<char>>(
       [](unsigned char c) { return std::isspace(c); });
 }
 
 template <typename P>
-inline auto Inside(char ob, P&& parser, char cb) {
-  return Seq(Skip(Char(ob)), std::forward<P>(parser), Skip(Char(cb)));
+inline auto Inside(char ob, std::shared_ptr<P>&& parser, char cb) {
+  return Seq(Skip(Char(ob)),
+             std::forward<std::shared_ptr<P>>(parser),
+             Skip(Char(cb)));
 }
 
 inline auto String(const std::string& s) {
-  std::list<CharParserType<char>> parsers;
+  std::list<std::shared_ptr<CharParserType<char>>> parsers;
   std::transform(s.cbegin(), s.cend(),
                  std::inserter(parsers, parsers.begin()),
                  Char<char>);
@@ -50,7 +53,7 @@ inline auto String(const std::string& s) {
         return std::string(chars.cbegin(), chars.cend());
       };
 
-  return Adapted(Chain(std::move(parsers)), adapter);
+  return Adapted(Chain(std::move(parsers)), std::move(adapter));
 }
 
 inline auto Line() {

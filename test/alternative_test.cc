@@ -60,7 +60,7 @@ class AlternativeParserTest : public ::testing::Test {
   }
 
   static auto expectedSkippedAsSkippedBs() {
-    return decltype(pSkippedAsSkippedBs())::ValueType();
+    return decltype(pSkippedAsSkippedBs())::element_type::ValueType();
   }
 };
 

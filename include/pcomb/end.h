@@ -1,13 +1,15 @@
 #ifndef PCOMB_END_H_
 #define PCOMB_END_H_
 
+#include <memory>
+
 #include "pcomb/privates/end.h"
 
 namespace pcomb {
 
 template <typename CharType = char>
 inline auto End() {
-  return privates::EndParser<CharType>();
+  return std::make_shared<privates::EndParser<CharType>>();
 }
 
 }  // namespace pcomb

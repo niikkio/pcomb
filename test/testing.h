@@ -53,7 +53,7 @@ inline void TestContainerParserSuccess(std::string input,
   auto expected_pos = OkPosition(input, expected_consumed_number);
   pcomb::StringStream s(std::move(input));
 
-  auto res = parser.parse(&s);
+  auto res = parser->parse(&s);
   EXPECT_TRUE(res.success());
 
   EXPECT_EQ(res.get_consumed_number(), expected_consumed_number);
@@ -70,7 +70,7 @@ inline void TestContainerParserFail(std::string input, const Parser& parser) {
   pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
-  auto res = parser.parse(&s);
+  auto res = parser->parse(&s);
   EXPECT_FALSE(res.success());
   EXPECT_EQ(res.get_consumed_number(), 0);
 
@@ -86,7 +86,7 @@ inline void TestParserSuccess(std::string input,
   auto expected_pos = OkPosition(input, expected_consumed_number);
   pcomb::StringStream s(std::move(input));
 
-  auto res = parser.parse(&s);
+  auto res = parser->parse(&s);
   EXPECT_TRUE(res.success());
 
   EXPECT_EQ(res.get_consumed_number(), expected_consumed_number);
@@ -104,7 +104,7 @@ inline void TestParserFail(std::string input,
   pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
-  auto res = parser.parse(&s);
+  auto res = parser->parse(&s);
   EXPECT_FALSE(res.success());
   EXPECT_EQ(res.get_consumed_number(), 0);
 

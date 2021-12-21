@@ -27,29 +27,15 @@ class ManyParser : public ManyBaseType<P> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit ManyParser(const P& parser, size_t min_count = 0)
-      : parser_(parser),
+  explicit ManyParser(std::shared_ptr<P>&& parser, size_t min_count = 0)
+      : parser_(std::forward<std::shared_ptr<P>>(parser)),
         min_count_(min_count),
         max_count_(0),
         is_unlimited_(true) {
   }
 
-  ManyParser(const P& parser, size_t min_count, size_t max_count)
-      : parser_(parser),
-        min_count_(min_count),
-        max_count_(max_count),
-        is_unlimited_(false) {
-  }
-
-  explicit ManyParser(P&& parser, size_t min_count = 0)
-      : parser_(std::forward<P>(parser)),
-        min_count_(min_count),
-        max_count_(0),
-        is_unlimited_(true) {
-  }
-
-  ManyParser(P&& parser, size_t min_count, size_t max_count)
-      : parser_(std::forward<P>(parser)),
+  ManyParser(std::shared_ptr<P>&& parser, size_t min_count, size_t max_count)
+      : parser_(std::forward<std::shared_ptr<P>>(parser)),
         min_count_(min_count),
         max_count_(max_count),
         is_unlimited_(false) {
@@ -61,7 +47,7 @@ class ManyParser : public ManyBaseType<P> {
     size_t consumed_number = 0;
 
     while (is_unlimited_ || values.size() < max_count_) {
-      auto result = parser_.parse(stream_copy.get());
+      auto result = parser_->parse(stream_copy.get());
       if (!result.success()) {
           break;
       }
@@ -83,7 +69,7 @@ class ManyParser : public ManyBaseType<P> {
   }
 
  private:
-  P parser_;
+  std::shared_ptr<P> parser_;
   size_t min_count_;
   size_t max_count_;
   bool is_unlimited_;

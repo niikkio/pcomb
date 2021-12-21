@@ -2,6 +2,7 @@
 #define PCOMB_PRIVATES_STRICT_ADAPTIVE_H_
 
 #include <functional>
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -25,16 +26,13 @@ class StrictAdaptiveParser
   using StreamType = IStream<CharType>;
 
  public:
-  explicit StrictAdaptiveParser(const P& p, const F& f)
-      : parser_(p), func_(f) {
-  }
-
-  explicit StrictAdaptiveParser(P&& p, F&& f)
-      : parser_(std::forward<P>(p)), func_(std::forward<F>(f)) {
+  explicit StrictAdaptiveParser(std::shared_ptr<P>&& p, F&& f)
+      : parser_(std::forward<std::shared_ptr<P>>(p))
+      , func_(std::forward<F>(f)) {
   }
 
   ResultType parse(StreamType* stream) const override {
-    auto result = parser_.parse(stream);
+    auto result = parser_->parse(stream);
     if (!result.success()) {
       return ResultType(Trace("StrictAdaptive",
                               stream->position(),
@@ -47,7 +45,7 @@ class StrictAdaptiveParser
   }
 
  private:
-  P parser_;
+  std::shared_ptr<P> parser_;
   F func_;
 };
 

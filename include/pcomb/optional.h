@@ -2,6 +2,7 @@
 #define PCOMB_OPTIONAL_H_
 
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "pcomb/adaptive.h"
@@ -10,16 +11,17 @@
 namespace pcomb {
 
 template <typename P>
-inline auto Opt(P&& parser) {
-  return privates::OptionalParser<std::remove_reference_t<P>>(
-      std::forward<P>(parser));
+inline auto Opt(std::shared_ptr<P>&& parser) {
+  return std::make_shared<privates::OptionalParser<P>>(
+      std::forward<std::shared_ptr<P>>(parser));
 }
 
 template <typename P, typename T>
-inline auto ParseOrDefault(P&& parser, const T& default_value) {
-  auto maybe = Opt(std::forward<P>(parser));
+inline auto ParseWithDefault(std::shared_ptr<P>&& parser,
+                             const T& default_value) {
+  auto maybe = Opt(std::forward<std::shared_ptr<P>>(parser));
 
-  using R = typename decltype(maybe)::ValueType;
+  using R = typename decltype(maybe)::element_type::ValueType;
   using V = typename R::value_type;
   std::function<V(R)> adapter =
       [=](R&& opt) {

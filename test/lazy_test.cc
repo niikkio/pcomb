@@ -53,7 +53,7 @@ class LazyParserTest : public ::testing::Test {
 
    public:
     ResultType parse(StreamType* stream) const override {
-      return Any(E1(), E2()).parse(stream);
+      return Any(E1(), E2())->parse(stream);
     }
   };
 

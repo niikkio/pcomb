@@ -1,24 +1,17 @@
 #ifndef PCOMB_CONSTRUCTIVE_H_
 #define PCOMB_CONSTRUCTIVE_H_
 
+#include <memory>
 #include <utility>
 
-#include "pcomb/parser.h"
 #include "pcomb/privates/constructive.h"
 
 namespace pcomb {
 
 template <typename T, typename P>
-inline auto Construct(P&& parser) {
-  return privates::ConstructiveParser<T, std::remove_reference_t<P>>(
-      std::forward<P>(parser));
-}
-
-template <typename T, typename P>
-inline auto PointerToConstruct(P&& parser) {
-  using ParserType = std::remove_reference_t<P>;
-  return ParserPointerType<T, typename ParserType::CharType>(
-      new privates::ConstructiveParser<T, ParserType>(std::forward<P>(parser)));
+inline auto Construct(std::shared_ptr<P>&& parser) {
+  return std::make_shared<privates::ConstructiveParser<T, P>>(
+      std::forward<std::shared_ptr<P>>(parser));
 }
 
 }  // namespace pcomb

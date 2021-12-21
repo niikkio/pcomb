@@ -1,6 +1,7 @@
 #ifndef PCOMB_PRIVATES_CONSTRUCTIVE_H_
 #define PCOMB_PRIVATES_CONSTRUCTIVE_H_
 
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -64,11 +65,11 @@ class ConstructiveParser : public Parser<typename P::CharType, T> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit ConstructiveParser(const P& p) : parser_(p) { }
-  explicit ConstructiveParser(P&& p) : parser_(std::forward<P>(p)) { }
+  explicit ConstructiveParser(std::shared_ptr<P>&& p)
+      : parser_(std::forward<std::shared_ptr<P>>(p)) { }
 
   ResultType parse(StreamType* stream) const override {
-    auto result = parser_.parse(stream);
+    auto result = parser_->parse(stream);
     if (!result.success()) {
       return ResultType(Trace("Constructive",
                               stream->position(),
@@ -82,7 +83,7 @@ class ConstructiveParser : public Parser<typename P::CharType, T> {
   }
 
  private:
-  P parser_;
+  std::shared_ptr<P> parser_;
 };
 
 }  // namespace pcomb::privates

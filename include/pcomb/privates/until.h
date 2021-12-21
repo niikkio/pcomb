@@ -26,15 +26,15 @@ class UntilParser : public UntilBaseType<P> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit UntilParser(const P& parser) : parser_(parser) { }
-  explicit UntilParser(P&& parser) : parser_(std::forward<P>(parser)) { }
+  explicit UntilParser(std::shared_ptr<P>&& parser)
+      : parser_(std::forward<std::shared_ptr<P>>(parser)) { }
 
   ResultType parse(StreamType* stream) const override {
     auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
 
     ValueType values;
     size_t consumed_number = 0;
-    while (!parser_.parse(stream_copy.get()).success()) {
+    while (!parser_->parse(stream_copy.get()).success()) {
       if (stream_copy->empty()) {
         break;
       }
@@ -49,7 +49,7 @@ class UntilParser : public UntilBaseType<P> {
   }
 
  private:
-  P parser_;
+  std::shared_ptr<P> parser_;
 };
 
 }  // namespace pcomb::privates

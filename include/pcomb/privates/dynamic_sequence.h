@@ -22,7 +22,7 @@ class DynamicSequenceParser : public Parser<
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::list<P>;
+  using StorageType = std::list<std::shared_ptr<P>>;
 
  public:
   explicit DynamicSequenceParser(const StorageType& ps)
@@ -39,7 +39,7 @@ class DynamicSequenceParser : public Parser<
     ValueType values;
     size_t consumed_number = 0;
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
-      auto result = it->parse(stream_copy.get());
+      auto result = (*it)->parse(stream_copy.get());
       if (!result.success()) {
         return ResultType(Trace("DynamicSequence",
                                 stream->position(),

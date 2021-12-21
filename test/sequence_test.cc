@@ -35,7 +35,7 @@ class SequenceParserTest : public ::testing::Test {
   }
 
   static auto expectedSkippedASkippedB() {
-    return decltype(pSkippedASkippedB())::ValueType();
+    return decltype(pSkippedASkippedB())::element_type::ValueType();
   }
 
   static auto pABCwithSkippedBraces() {

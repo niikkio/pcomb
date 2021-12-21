@@ -2,6 +2,7 @@
 #define PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_
 
 #include <list>
+#include <memory>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -29,17 +30,14 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::tuple<P1, PS...>;
+  using StorageType = std::tuple<std::shared_ptr<P1>, std::shared_ptr<PS>...>;
   using LogType = std::list<Trace>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
-  explicit StrictAlternativeParser(const P1& p1, const PS&... ps)
-      : parsers_(std::make_tuple(p1, ps...)) {
-  }
-
-  explicit StrictAlternativeParser(P1&& p1, PS&&... ps)
-      : parsers_(std::forward_as_tuple(p1, ps...)) {
+  explicit StrictAlternativeParser(
+      std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps)
+          : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -52,7 +50,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   struct RecursiveAlternativeParser {
     static ResultType parse(
           const StorageType& parsers, StreamType* stream, LogType* log) {
-      auto result = std::get<I>(parsers).parse(stream);
+      auto result = std::get<I>(parsers)->parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::in_place_index<I>,
@@ -67,7 +65,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   struct RecursiveAlternativeParser<StorageSize-1, Dummy> {
     static ResultType parse(
         const StorageType& parsers, StreamType* stream, LogType* log) {
-      auto result = std::get<StorageSize-1>(parsers).parse(stream);
+      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed,

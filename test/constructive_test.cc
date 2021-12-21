@@ -11,17 +11,12 @@
 
 using pcomb::Char;
 using pcomb::Construct;
-using pcomb::PointerToConstruct;
 using pcomb::Seq;
 
 class ConstructiveParserTest : public ::testing::Test {
  protected:
   static auto pPairAB() {
     return Construct<Pair>(Seq(Char('A'), Char('B')));
-  }
-
-  static auto ppPairAB() {
-    return PointerToConstruct<Pair>(Seq(Char('A'), Char('B')));
   }
 
   static auto expectedPairAB() {
@@ -42,9 +37,5 @@ TEST_F(ConstructiveParserTest, Match) {
 
 TEST_F(ConstructiveParserTest, NotMatch) {
   TestParserFail("BA", pPairAB());
-}
-
-TEST_F(ConstructiveParserTest, PointerMatch) {
-  TestParserSuccess("AB", *(ppPairAB()), expectedPairAB(), 2, CheckEmpty());
 }
 

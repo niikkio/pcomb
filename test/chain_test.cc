@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <list>
+#include <memory>
 
 #include "testing.h"
 
@@ -12,7 +13,7 @@ using pcomb::Char;
 
 class ChainParserTest : public ::testing::Test {
  private:
-  using Parsers = std::list<pcomb::CharParserType<char>>;
+  using Parsers = std::list<std::shared_ptr<pcomb::CharParserType<char>>>;
 
  protected:
   static auto pNone() {

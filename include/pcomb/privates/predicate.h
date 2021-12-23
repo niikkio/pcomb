@@ -26,12 +26,14 @@ class PredicateParser : public Parser<T, T> {
  public:
   explicit PredicateParser(PredicateType&& predicate)
       : predicate_(std::forward<PredicateType>(predicate)) {
+    this->name_ = "Predicate Parser";
   }
 
   ResultType parse(StreamType* stream) const override {
     if (stream->empty()) {
-      auto message = "characters not found";
-      return ResultType(Trace("Predicate", stream->position(), message));
+      auto message = "character not found";
+      auto trace = Trace(this->name(), stream->position(), std::move(message));
+      return ResultType(std::move(trace));
     }
 
     CharType ch(stream->head());
@@ -41,9 +43,8 @@ class PredicateParser : public Parser<T, T> {
     }
 
     auto message = "unexpected character: \'" + std::string(1, ch) + "\'";
-    return ResultType(Trace("Predicate",
-                            stream->position(),
-                            std::move(message)));
+    auto trace = Trace(this->name(), stream->position(), std::move(message));
+    return ResultType(std::move(trace));
   }
 
  private:

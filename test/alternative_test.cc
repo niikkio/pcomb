@@ -20,19 +20,31 @@ using pcomb::Some;
 class AlternativeParserTest : public ::testing::Test {
  protected:
   static auto pA() {
-    return with_name(Any(Char('A')), "A");
+    return with_name(Any(Char('A')), "pA");
   }
 
   static auto traceA(char ch) {
     std::stringstream ss;
-    ss << "A failed at [0,0,0]\n"
-       << "\tPredicate failed at [0,0,0]"
+    ss << "pA failed at [0,0,0]\n"
+       << "\tChar(A) Parser failed at [0,0,0]"
        << " [unexpected character: \'" << ch << "\']\n";
     return ss.str();
   }
 
   static auto pABC() {
-    return Any(Char('A'), Char('B'), Char('C'));
+    return with_name(Any(Char('A'), Char('B'), Char('C')), "pABC");
+  }
+
+  static auto traceABC(char c) {
+    std::stringstream ss;
+    ss << "pABC failed at [0,0,0]\n"
+       << "\tChar(A) Parser failed at [0,0,0] "
+       << "[unexpected character: \'" << c << "\']\n"
+       << "\tChar(B) Parser failed at [0,0,0] "
+       << "[unexpected character: \'" << c << "\']\n"
+       << "\tChar(C) Parser failed at [0,0,0] "
+       << "[unexpected character: \'" << c << "\']\n";
+    return ss.str();
   }
 
   static auto pABs() {
@@ -73,14 +85,7 @@ TEST_F(AlternativeParserTest, SingleNotMatch) {
 }
 
 TEST_F(AlternativeParserTest, NotMatch) {
-  auto expected = "Parser failed at [0,0,0]\n"
-                  "\tPredicate failed at [0,0,0] "
-                  "[unexpected character: \'D\']\n"
-                  "\tPredicate failed at [0,0,0] "
-                  "[unexpected character: \'D\']\n"
-                  "\tPredicate failed at [0,0,0] "
-                  "[unexpected character: \'D\']\n";
-  TestParserFail("D", pABC(), expected);
+  TestParserFail("D", pABC(), traceABC('D'));
 }
 
 TEST_F(AlternativeParserTest, Take1) {

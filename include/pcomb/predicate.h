@@ -2,6 +2,7 @@
 #define PCOMB_PREDICATE_H_
 
 #include <memory>
+#include <sstream>
 #include <type_traits>
 
 #include "pcomb/privates/predicate.h"
@@ -10,8 +11,10 @@ namespace pcomb {
 
 template <typename Ch>
 inline auto Char(Ch ch) {
-  return std::make_shared<privates::PredicateParser<Ch>>(
-      [ch](Ch c) { return c == ch; });
+  std::stringstream ss;
+  ss << "Char(" << ch << ") Parser";
+  return with_name(std::make_shared<privates::PredicateParser<Ch>>(
+      [ch](Ch c) { return c == ch; }), ss.str());
 }
 
 template <typename Ch = char>

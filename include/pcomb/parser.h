@@ -30,9 +30,17 @@ class Parser {
     return std::forward<std::shared_ptr<Parser>>(p);
   }
 
- private:
+ protected:
   std::string name_ = "Parser";
 };
+
+template <typename P, typename... Args>
+inline std::shared_ptr<P> make(Args&&... args) {
+  return std::make_shared<P>(std::forward<Args>(args)...);
+}
+
+template <typename P>
+using ParserPointer = std::shared_ptr<P>;
 
 }  // namespace pcomb
 #endif  // PCOMB_PARSER_H_

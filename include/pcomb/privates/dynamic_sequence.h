@@ -2,7 +2,6 @@
 #define PCOMB_PRIVATES_DYNAMIC_SEQUENCE_H_
 
 #include <list>
-#include <memory>
 #include <utility>
 
 #include "pcomb/parser.h"
@@ -22,7 +21,7 @@ class DynamicSequenceParser : public Parser<
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::list<std::shared_ptr<P>>;
+  using StorageType = std::list<ParserPointer<P>>;
 
  public:
   explicit DynamicSequenceParser(const StorageType& ps)
@@ -34,7 +33,7 @@ class DynamicSequenceParser : public Parser<
   }
 
   ResultType parse(StreamType* stream) const override {
-    auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
+    auto stream_copy = stream->clone();
 
     ValueType values;
     size_t consumed_number = 0;

@@ -1,7 +1,6 @@
 #ifndef PCOMB_PRIVATE_STRICT_SEQUENCE_H_
 #define PCOMB_PRIVATE_STRICT_SEQUENCE_H_
 
-#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -27,17 +26,17 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
   using ParsersType = std::tuple<P1, PS...>;
-  using StorageType = std::tuple<std::shared_ptr<P1>, std::shared_ptr<PS>...>;
+  using StorageType = std::tuple<ParserPointer<P1>, ParserPointer<PS>...>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
   explicit StrictSequenceParser(
-      std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps)
+      ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 
   ResultType parse(StreamType* stream) const override {
-    auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
+    auto stream_copy = stream->clone();
 
     auto result =
         RecursiveSequenceParser<0>::parse(parsers_, stream_copy.get());

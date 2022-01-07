@@ -2,7 +2,6 @@
 #define PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_
 
 #include <list>
-#include <memory>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -30,13 +29,13 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::tuple<std::shared_ptr<P1>, std::shared_ptr<PS>...>;
+  using StorageType = std::tuple<ParserPointer<P1>, ParserPointer<PS>...>;
   using LogType = std::list<Trace>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
  public:
   explicit StrictAlternativeParser(
-      std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps)
+      ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 

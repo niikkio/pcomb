@@ -1,7 +1,6 @@
 #ifndef PCOMB_PRIVATES_OPTIONAL_H_
 #define PCOMB_PRIVATES_OPTIONAL_H_
 
-#include <memory>
 #include <optional>
 #include <utility>
 
@@ -23,8 +22,8 @@ class OptionalParser : public Parser<typename P::CharType,
   using StreamType = IStream<CharType>;
 
  public:
-  explicit OptionalParser(std::shared_ptr<P>&& p)
-      : parser_(std::forward<std::shared_ptr<P>>(p)) { }
+  explicit OptionalParser(ParserPointer<P>&& p)
+      : parser_(std::forward<ParserPointer<P>>(p)) { }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
@@ -37,7 +36,7 @@ class OptionalParser : public Parser<typename P::CharType,
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
 };
 
 }  // namespace pcomb::privates

@@ -1,7 +1,6 @@
 #ifndef PCOMB_PRIVATES_EXACT_H_
 #define PCOMB_PRIVATES_EXACT_H_
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -23,11 +22,11 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit ExactParser(std::shared_ptr<P>&& p)
-      : parser_(std::forward<std::shared_ptr<P>>(p)) { }
+  explicit ExactParser(ParserPointer<P>&& p)
+      : parser_(std::forward<ParserPointer<P>>(p)) { }
 
   ResultType parse(StreamType* stream) const override {
-    auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
+    auto stream_copy = stream->clone();
 
     auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
@@ -49,7 +48,7 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
 };
 
 }  // namespace pcomb::privates

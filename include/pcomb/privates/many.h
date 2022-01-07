@@ -2,7 +2,6 @@
 #define PCOMB_PRIVATES_MANY_H_
 
 #include <list>
-#include <memory>
 #include <utility>
 
 #include "pcomb/parser.h"
@@ -27,15 +26,15 @@ class ManyParser : public ManyBaseType<P> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit ManyParser(std::shared_ptr<P>&& parser, size_t min_count = 0)
-      : parser_(std::forward<std::shared_ptr<P>>(parser)),
+  explicit ManyParser(ParserPointer<P>&& parser, size_t min_count = 0)
+      : parser_(std::forward<ParserPointer<P>>(parser)),
         min_count_(min_count),
         max_count_(0),
         is_unlimited_(true) {
   }
 
-  ManyParser(std::shared_ptr<P>&& parser, size_t min_count, size_t max_count)
-      : parser_(std::forward<std::shared_ptr<P>>(parser)),
+  ManyParser(ParserPointer<P>&& parser, size_t min_count, size_t max_count)
+      : parser_(std::forward<ParserPointer<P>>(parser)),
         min_count_(min_count),
         max_count_(max_count),
         is_unlimited_(false) {
@@ -43,7 +42,7 @@ class ManyParser : public ManyBaseType<P> {
 
   ResultType parse(StreamType* stream) const override {
     auto values = ValueType();
-    auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
+    auto stream_copy = stream->clone();
     size_t consumed_number = 0;
 
     while (is_unlimited_ || values.size() < max_count_) {
@@ -69,7 +68,7 @@ class ManyParser : public ManyBaseType<P> {
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
   size_t min_count_;
   size_t max_count_;
   bool is_unlimited_;

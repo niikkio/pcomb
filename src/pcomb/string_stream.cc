@@ -35,8 +35,8 @@ bool StringStream::empty() const {
   return pos_.index >= string_pointer_->size();
 }
 
-StringStream* StringStream::clone() const {
-  return new StringStream(*this);
+StreamPointer<IStream<char>> StringStream::clone() const {
+  return StreamPointer<StringStream>(new StringStream(*this));
 }
 
 StreamPosition StringStream::position() const {

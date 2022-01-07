@@ -1,7 +1,6 @@
 #ifndef PCOMB_PRIVATES_SKIPPED_H_
 #define PCOMB_PRIVATES_SKIPPED_H_
 
-#include <memory>
 #include <utility>
 
 #include "pcomb/parser.h"
@@ -23,8 +22,8 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit SkippedParser(std::shared_ptr<P>&& parser)
-      : parser_(std::forward<std::shared_ptr<P>>(parser)) { }
+  explicit SkippedParser(ParserPointer<P>&& parser)
+      : parser_(std::forward<ParserPointer<P>>(parser)) { }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
@@ -40,7 +39,7 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
 };
 
 }  // namespace pcomb::privates

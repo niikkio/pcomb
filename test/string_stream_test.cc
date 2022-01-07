@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <memory>
-
 #include "pcomb/string_stream.h"
 
 using pcomb::StringStream;
@@ -32,7 +30,7 @@ TEST(StringStreamTest, Consume3) {
 TEST(StringStreamTest, Clone) {
   StringStream s("AB");
 
-  auto p = std::unique_ptr<StringStream>(s.clone());
+  auto p = s.clone();
   p->consume(1);
 
   EXPECT_EQ(s.head(), 'A');

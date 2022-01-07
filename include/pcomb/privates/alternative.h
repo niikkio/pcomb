@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <list>
-#include <memory>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -51,7 +50,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
  private:
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
-  using StorageType = std::tuple<std::shared_ptr<P1>, std::shared_ptr<PS>...>;
+  using StorageType = std::tuple<ParserPointer<P1>, ParserPointer<PS>...>;
   using ParsersType = std::tuple<P1, PS...>;
   using LogType = std::list<Trace>;
   using TraceBuilderType = std::function<Trace(StreamType*, LogType*)>;
@@ -59,7 +58,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
 
  public:
   explicit AlternativeParser(
-      std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps)
+      ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
   }
 

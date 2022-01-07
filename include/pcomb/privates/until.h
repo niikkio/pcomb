@@ -2,7 +2,6 @@
 #define PCOMB_PRIVATES_UNTIL_H_
 
 #include <list>
-#include <memory>
 #include <utility>
 
 #include "pcomb/parser.h"
@@ -26,11 +25,11 @@ class UntilParser : public UntilBaseType<P> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit UntilParser(std::shared_ptr<P>&& parser)
-      : parser_(std::forward<std::shared_ptr<P>>(parser)) { }
+  explicit UntilParser(ParserPointer<P>&& parser)
+      : parser_(std::forward<ParserPointer<P>>(parser)) { }
 
   ResultType parse(StreamType* stream) const override {
-    auto stream_copy = std::unique_ptr<StreamType>(stream->clone());
+    auto stream_copy = stream->clone();
 
     ValueType values;
     size_t consumed_number = 0;
@@ -49,7 +48,7 @@ class UntilParser : public UntilBaseType<P> {
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
 };
 
 }  // namespace pcomb::privates

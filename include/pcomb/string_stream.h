@@ -16,7 +16,7 @@ class StringStream : public IStream<char> {
   const char& head() const override;
   void consume(size_t n) override;
   bool empty() const override;
-  StringStream* clone() const override;
+  StreamPointer<IStream<char>> clone() const override;
   StreamPosition position() const override;
 
  private:

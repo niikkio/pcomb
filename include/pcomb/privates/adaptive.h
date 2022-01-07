@@ -2,7 +2,6 @@
 #define PCOMB_PRIVATES_ADAPTIVE_H_
 
 #include <functional>
-#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -61,8 +60,8 @@ class AdaptiveParser
   using StreamType = IStream<CharType>;
 
  public:
-  explicit AdaptiveParser(std::shared_ptr<P>&& p, F&& f)
-      : parser_(std::forward<std::shared_ptr<P>>(p))
+  explicit AdaptiveParser(ParserPointer<P>&& p, F&& f)
+      : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
   }
 
@@ -81,7 +80,7 @@ class AdaptiveParser
   }
 
  private:
-  std::shared_ptr<P> parser_;
+  ParserPointer<P> parser_;
   F func_;
 };
 

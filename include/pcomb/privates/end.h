@@ -1,6 +1,7 @@
 #ifndef PCOMB_PRIVATES_END_H_
 #define PCOMB_PRIVATES_END_H_
 
+#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -20,9 +21,14 @@ class EndParser : public Parser<C, NoValue> {
   using StreamType = IStream<CharType>;
 
  public:
+  EndParser() {
+    this->name_ = END_PARSER_NAME;
+  }
+
   ResultType parse(StreamType* stream) const override {
     if (!stream->empty()) {
-      return ResultType(Trace("End", stream->position(), "EOF expected"));
+      return ResultType(Trace(
+          this->name(), stream->position(), END_PARSER_ERROR_MESSAGE));
     }
 
     return ResultType(0, ValueType());

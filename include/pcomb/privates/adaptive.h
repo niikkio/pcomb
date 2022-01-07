@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 
+#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -63,15 +64,17 @@ class AdaptiveParser
   explicit AdaptiveParser(ParserPointer<P>&& p, F&& f)
       : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
+    this->name_ = ADAPTIVE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
     if (!result.success()) {
-      return ResultType(Trace("Adaptive",
-                              stream->position(),
-                              "",
-                              {std::move(result).get_trace()}));
+      return ResultType(Trace(
+          this->name(),
+          stream->position(),
+          "",
+          {std::move(result).get_trace()}));
     }
 
     size_t consumed_number = result.get_consumed_number();

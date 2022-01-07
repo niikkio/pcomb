@@ -10,11 +10,11 @@ namespace pcomb {
 
 Trace::Trace(const std::string& parser_name,
              StreamPosition&& position,
-             std::string&& message,
+             const std::string& message,
              std::list<Trace>&& nested)
     : parser_name_(parser_name)
     , position_(std::forward<StreamPosition>(position))
-    , message_(std::forward<std::string>(message))
+    , message_(message)
     , nested_(std::forward<std::list<Trace>>(nested)) {
 }
 

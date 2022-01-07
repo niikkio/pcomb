@@ -7,6 +7,7 @@
 #include <utility>
 #include <variant>
 
+#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -60,6 +61,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
   explicit AlternativeParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
+    this->name_ = ALTERNATIVE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {

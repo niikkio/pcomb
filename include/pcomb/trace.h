@@ -12,7 +12,7 @@ class Trace {
  public:
   Trace(const std::string& parser_name,
         StreamPosition&& position,
-        std::string&& message = "",
+        const std::string& message = "",
         std::list<Trace>&& nested = {});
 
   std::string to_string(size_t nesting_level = 0) const;

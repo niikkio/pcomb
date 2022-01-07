@@ -4,6 +4,7 @@
 #include <list>
 #include <utility>
 
+#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -26,10 +27,12 @@ class DynamicSequenceParser : public Parser<
  public:
   explicit DynamicSequenceParser(const StorageType& ps)
       : parsers_(ps) {
+    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME;
   }
 
   explicit DynamicSequenceParser(StorageType&& ps)
       : parsers_(std::forward<StorageType>(ps)) {
+    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -40,10 +43,11 @@ class DynamicSequenceParser : public Parser<
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
       auto result = (*it)->parse(stream_copy.get());
       if (!result.success()) {
-        return ResultType(Trace("DynamicSequence",
-                                stream->position(),
-                                "",
-                                {std::move(result).get_trace()}));
+        return ResultType(Trace(
+            this->name(),
+            stream->position(),
+            "",
+            {std::move(result).get_trace()}));
       }
 
       consumed_number += result.get_consumed_number();

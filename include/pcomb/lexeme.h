@@ -6,7 +6,6 @@
 #include <functional>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -14,6 +13,7 @@
 #include "pcomb/chain.h"
 #include "pcomb/skipped.h"
 #include "pcomb/sequence.h"
+#include "pcomb/parser.h"
 #include "pcomb/predicate.h"
 #include "pcomb/until.h"
 
@@ -22,7 +22,7 @@
 namespace pcomb {
 
 inline auto Digit() {
-  return std::make_shared<privates::PredicateParser<char>>(
+  return make<privates::PredicateParser<char>>(
       [](char c) { return '0' <= c && c <= '9'; });
 }
 
@@ -31,19 +31,19 @@ inline auto NewLine() {
 }
 
 inline auto Space() {
-  return std::make_shared<privates::PredicateParser<char>>(
+  return make<privates::PredicateParser<char>>(
       [](unsigned char c) { return std::isspace(c); });
 }
 
 template <typename P>
-inline auto Inside(char ob, std::shared_ptr<P>&& parser, char cb) {
+inline auto Inside(char ob, ParserPointer<P>&& parser, char cb) {
   return Seq(Skip(Char(ob)),
-             std::forward<std::shared_ptr<P>>(parser),
+             std::forward<ParserPointer<P>>(parser),
              Skip(Char(cb)));
 }
 
 inline auto String(const std::string& s) {
-  std::list<std::shared_ptr<CharParserType<char>>> parsers;
+  std::list<ParserPointer<CharParserType<char>>> parsers;
   std::transform(s.cbegin(), s.cend(),
                  std::inserter(parsers, parsers.begin()),
                  Char<char>);

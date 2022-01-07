@@ -1,7 +1,6 @@
 #ifndef PCOMB_ALTERNATIVE_H_
 #define PCOMB_ALTERNATIVE_H_
 
-#include <memory>
 #include <utility>
 
 #include "pcomb/parser.h"
@@ -18,10 +17,10 @@ inline auto Any(ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps) {
 }
 
 template <typename P1, typename... PS>
-inline auto StrictAny(std::shared_ptr<P1>&& p1, std::shared_ptr<PS>&&... ps) {
-  return std::make_shared<privates::StrictAlternativeParser<P1, PS...>>(
-          std::forward<std::shared_ptr<P1>>(p1),
-          std::forward<std::shared_ptr<PS>>(ps)...);
+inline auto StrictAny(ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps) {
+  return make<privates::StrictAlternativeParser<P1, PS...>>(
+          std::forward<ParserPointer<P1>>(p1),
+          std::forward<ParserPointer<PS>>(ps)...);
 }
 
 }  // namespace pcomb

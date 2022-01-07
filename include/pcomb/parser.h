@@ -10,6 +10,9 @@
 
 namespace pcomb {
 
+template <typename P>
+using ParserPointer = std::shared_ptr<P>;
+
 template <typename C, typename V>
 class Parser {
  public:
@@ -24,10 +27,10 @@ class Parser {
     return name_;
   }
 
-  friend std::shared_ptr<Parser>&& with_name(
-      std::shared_ptr<Parser>&& p, const std::string& name) {
+  friend ParserPointer<Parser>&& with_name(
+      ParserPointer<Parser>&& p, const std::string& name) {
     p->name_ = name;
-    return std::forward<std::shared_ptr<Parser>>(p);
+    return std::forward<ParserPointer<Parser>>(p);
   }
 
  protected:
@@ -38,9 +41,6 @@ template <typename P, typename... Args>
 inline std::shared_ptr<P> make(Args&&... args) {
   return std::make_shared<P>(std::forward<Args>(args)...);
 }
-
-template <typename P>
-using ParserPointer = std::shared_ptr<P>;
 
 }  // namespace pcomb
 #endif  // PCOMB_PARSER_H_

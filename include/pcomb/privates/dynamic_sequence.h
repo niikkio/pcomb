@@ -43,11 +43,8 @@ class DynamicSequenceParser : public Parser<
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
       auto result = (*it)->parse(stream_copy.get());
       if (!result.success()) {
-        return ResultType(Trace(
-            this->name(),
-            stream->position(),
-            "",
-            {std::move(result).get_trace()}));
+        return ResultType(
+            Trace(this->name(), stream, "", {std::move(result).get_trace()}));
       }
 
       consumed_number += result.get_consumed_number();

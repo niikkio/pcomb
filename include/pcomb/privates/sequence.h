@@ -58,10 +58,8 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
           Extract<TempSize, TempType>::from(std::move(result).get_value()));
     }
 
-    return ResultType(Trace("Sequence",
-                            stream->position(),
-                            "",
-                            {std::move(result).get_trace()}));
+    return ResultType(
+        Trace("Sequence", stream, "", {std::move(result).get_trace()}));
   }
 
  private:
@@ -81,19 +79,16 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     static ResultType parse(const StorageType& parsers, StreamType* stream) {
       auto result = std::get<I>(parsers)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream->position(),
-                                "",
-                                {std::move(result).get_trace()}));
+        return ResultType(
+            Trace("Sequence", stream, "", {std::move(result).get_trace()}));
       }
 
       auto next_result =
           RecursiveSequenceParser<I+1, SkipNext>::parse(parsers, stream);
       if (!next_result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream->position(),
-                                "",
-                                {std::move(next_result).get_trace()}));
+        return ResultType(
+            Trace("Sequence", stream, "",
+                  {std::move(next_result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -121,7 +116,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
       auto result = std::get<I>(parsers)->parse(stream);
       if (!result.success()) {
         return ResultType(Trace("Sequence",
-                                stream->position(),
+                                stream,
                                 "",
                                 {std::move(result).get_trace()}));
       }
@@ -130,7 +125,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
           RecursiveSequenceParser<I+1, SkipNext>::parse(parsers, stream);
       if (!next_result.success()) {
         return ResultType(Trace("Sequence",
-                                stream->position(),
+                                stream,
                                 "",
                                 {std::move(next_result).get_trace()}));
       }
@@ -154,7 +149,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
       auto result = std::get<StorageSize-1>(parsers)->parse(stream);
       if (!result.success()) {
         return ResultType(Trace("Sequence",
-                                stream->position(),
+                                stream,
                                 "",
                                 {std::move(result).get_trace()}));
       }
@@ -177,7 +172,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
       auto result = std::get<StorageSize-1>(parsers)->parse(stream);
       if (!result.success()) {
         return ResultType(Trace("Sequence",
-                                stream->position(),
+                                stream,
                                 "",
                                 {std::move(result).get_trace()}));
       }

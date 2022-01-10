@@ -73,7 +73,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
       }
       log->push_back(std::move(result).get_trace());
       return ResultType(Trace("StrictAlternative",
-                              stream->position(),
+                              stream,
                               "",
                               std::move(*log)));
     }

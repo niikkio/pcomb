@@ -30,17 +30,15 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
 
     auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
-      return ResultType(Trace("Exact",
-                              stream->position(),
-                              "",
-                              {std::move(result).get_trace()}));
+      return ResultType(
+          Trace("Exact", stream, "", {std::move(result).get_trace()}));
     }
 
     if (!stream_copy->empty()) {
       auto message = "unexpected characters at the end: \'" +
                      std::string(1, stream_copy->head()) + "...\' at " +
                      stream_copy->position().to_string();
-      return ResultType(Trace("Exact", stream->position(), std::move(message)));
+      return ResultType(Trace("Exact", stream, std::move(message)));
     }
 
     stream->consume(result.get_consumed_number());

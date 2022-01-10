@@ -3,6 +3,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "pcomb/stream_position.h"
 
@@ -10,10 +11,16 @@ namespace pcomb {
 
 class Trace {
  public:
+  template <typename StreamPointer>
   Trace(const std::string& parser_name,
-        StreamPosition&& position,
+        const StreamPointer stream_pointer,
         const std::string& message = "",
-        std::list<Trace>&& nested = {});
+        std::list<Trace>&& nested = {})
+      : parser_name_(parser_name)
+      , position_(stream_pointer->position())
+      , message_(message)
+      , nested_(std::forward<std::list<Trace>>(nested)) {
+  }
 
   std::string to_string(size_t nesting_level = 0) const;
 

@@ -8,16 +8,6 @@
 
 namespace pcomb {
 
-Trace::Trace(const std::string& parser_name,
-             StreamPosition&& position,
-             const std::string& message,
-             std::list<Trace>&& nested)
-    : parser_name_(parser_name)
-    , position_(std::forward<StreamPosition>(position))
-    , message_(message)
-    , nested_(std::forward<std::list<Trace>>(nested)) {
-}
-
 std::string Trace::to_string(size_t nesting_level) const {
   std::stringstream ss;
   ss << std::string(nesting_level, '\t')

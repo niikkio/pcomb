@@ -27,8 +27,8 @@ class EndParser : public Parser<C, NoValue> {
 
   ResultType parse(StreamType* stream) const override {
     if (!stream->empty()) {
-      return ResultType(Trace(
-          this->name(), stream->position(), END_PARSER_ERROR_MESSAGE));
+      return ResultType(
+          Trace(this->name(), stream, END_PARSER_ERROR_MESSAGE));
     }
 
     return ResultType(0, ValueType());

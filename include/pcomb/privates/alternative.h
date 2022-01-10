@@ -68,7 +68,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
     LogType log;
     auto trace_builder = TraceBuilderType(
         [this](StreamType* stream, LogType* log) {
-          return Trace(this->name(), stream->position(), "", std::move(*log));
+          return Trace(this->name(), stream, "", std::move(*log));
         });
     return RecursiveAlternativeParser<0>::parse(
         parsers_, stream, &log, trace_builder);

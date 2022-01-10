@@ -34,7 +34,7 @@ class StrictAdaptiveParser
     auto result = parser_->parse(stream);
     if (!result.success()) {
       return ResultType(Trace("StrictAdaptive",
-                              stream->position(),
+                              stream,
                               "",
                               {std::move(result).get_trace()}));
     }

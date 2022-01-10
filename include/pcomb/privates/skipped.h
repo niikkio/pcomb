@@ -33,7 +33,7 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
     }
 
     return ResultType(Trace("Skipped",
-                            stream->position(),
+                            stream,
                             "",
                             {std::move(result).get_trace()}));
   }

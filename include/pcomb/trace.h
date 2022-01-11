@@ -11,15 +11,17 @@ namespace pcomb {
 
 class Trace {
  public:
-  template <typename StreamPointer>
-  Trace(const std::string& parser_name,
-        const StreamPointer stream_pointer,
+  using LogType = std::list<Trace>;
+
+  template <typename ParserPointer, typename StreamPointer>
+  Trace(const ParserPointer& parser,
+        const StreamPointer& stream,
         const std::string& message = "",
-        std::list<Trace>&& nested = {})
-      : parser_name_(parser_name)
-      , position_(stream_pointer->position())
+        LogType&& nested = {})
+      : parser_name_(parser->name())
+      , position_(stream->position())
       , message_(message)
-      , nested_(std::forward<std::list<Trace>>(nested)) {
+      , nested_(std::forward<LogType>(nested)) {
   }
 
   std::string to_string(size_t nesting_level = 0) const;
@@ -28,7 +30,7 @@ class Trace {
   std::string parser_name_;
   StreamPosition position_;
   std::string message_;
-  std::list<Trace> nested_;
+  LogType nested_;
 };
 
 }  // namespace pcomb

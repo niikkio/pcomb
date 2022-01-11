@@ -39,7 +39,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     auto stream_copy = stream->clone();
 
     auto result =
-        RecursiveSequenceParser<0>::parse(parsers_, stream_copy.get());
+        RecursiveSequenceParser<0>::parse(this, stream_copy.get());
     if (result.success()) {
       stream->consume(result.get_consumed_number());
     }
@@ -58,21 +58,19 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<I>(parsers)->parse(stream);
+    static ResultType parse(const StrictSequenceParser* owner,
+                            StreamType* stream) {
+      auto result = std::get<I>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("StrictSequence",
-                                stream,
-                                "",
-                                {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
-      auto next_result = RecursiveSequenceParser<I+1>::parse(parsers, stream);
+      auto next_result = RecursiveSequenceParser<I+1>::parse(owner, stream);
       if (!next_result.success()) {
-        return ResultType(Trace("StrictSequence",
-                                stream,
-                                "",
-                                {std::move(next_result).get_trace()}));
+        auto trace = Trace(
+            owner, stream, "", {std::move(next_result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -92,13 +90,12 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
+    static ResultType parse(const StrictSequenceParser* owner,
+                            StreamType* stream) {
+      auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("StrictSequence",
-                                stream,
-                                "",
-                                {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number();

@@ -41,30 +41,30 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
 
   ResultType parse(StreamType* stream) const override {
     LogType log;
-    return RecursiveAlternativeParser<0>::parse(parsers_, stream, &log);
+    return RecursiveAlternativeParser<0>::parse(this, stream, &log);
   }
 
  private:
   template <size_t I, bool Dummy = true>
   struct RecursiveAlternativeParser {
-    static ResultType parse(
-          const StorageType& parsers, StreamType* stream, LogType* log) {
-      auto result = std::get<I>(parsers)->parse(stream);
+    static ResultType parse(const StrictAlternativeParser* owner,
+                            StreamType* stream, LogType* log) {
+      auto result = std::get<I>(owner->parsers_)->parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed, ValueType(std::in_place_index<I>,
                                               std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return RecursiveAlternativeParser<I+1>::parse(parsers, stream, log);
+      return RecursiveAlternativeParser<I+1>::parse(owner, stream, log);
     }
   };
 
   template <bool Dummy>
   struct RecursiveAlternativeParser<StorageSize-1, Dummy> {
-    static ResultType parse(
-        const StorageType& parsers, StreamType* stream, LogType* log) {
-      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
+    static ResultType parse(const StrictAlternativeParser* owner,
+                            StreamType* stream, LogType* log) {
+      auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
       if (result.success()) {
         size_t consumed = result.get_consumed_number();
         return ResultType(consumed,
@@ -72,10 +72,8 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
                                     std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return ResultType(Trace("StrictAlternative",
-                              stream,
-                              "",
-                              std::move(*log)));
+      auto trace = Trace(owner, stream, "", std::move(*log));
+      return ResultType(std::move(trace));
     }
   };
 

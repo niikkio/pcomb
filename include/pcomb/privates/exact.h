@@ -1,9 +1,9 @@
 #ifndef PCOMB_PRIVATES_EXACT_H_
 #define PCOMB_PRIVATES_EXACT_H_
 
-#include <string>
 #include <utility>
 
+#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
@@ -23,22 +23,22 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
 
  public:
   explicit ExactParser(ParserPointer<P>&& p)
-      : parser_(std::forward<ParserPointer<P>>(p)) { }
+      : parser_(std::forward<ParserPointer<P>>(p)) {
+    this->name_ = EXACT_PARSER_NAME;
+  }
 
   ResultType parse(StreamType* stream) const override {
     auto stream_copy = stream->clone();
 
     auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
-      return ResultType(
-          Trace("Exact", stream, "", {std::move(result).get_trace()}));
+      auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
+      return ResultType(std::move(trace));
     }
 
     if (!stream_copy->empty()) {
-      auto message = "unexpected characters at the end: \'" +
-                     std::string(1, stream_copy->head()) + "...\' at " +
-                     stream_copy->position().to_string();
-      return ResultType(Trace("Exact", stream, std::move(message)));
+      auto trace = Trace(this, stream, EXACT_PARSER_ERROR_MESSAGE(stream_copy));
+      return ResultType(std::move(trace));
     }
 
     stream->consume(result.get_consumed_number());

@@ -44,7 +44,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     using RootParser =
         RecursiveSequenceParser<0, IsSkippedParser<0, ParsersType>>;
 
-    auto result = RootParser::parse(parsers_, stream_copy.get());
+    auto result = RootParser::parse(this, stream_copy.get());
 
     if (result.success()) {
       using TempType = typename RootParser::ValueType;
@@ -59,7 +59,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     }
 
     return ResultType(
-        Trace("Sequence", stream, "", {std::move(result).get_trace()}));
+        Trace(this, stream, "", {std::move(result).get_trace()}));
   }
 
  private:
@@ -76,19 +76,19 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<I>(parsers)->parse(stream);
+    static ResultType parse(const SequenceParser* owner, StreamType* stream) {
+      auto result = std::get<I>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(
-            Trace("Sequence", stream, "", {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       auto next_result =
-          RecursiveSequenceParser<I+1, SkipNext>::parse(parsers, stream);
+          RecursiveSequenceParser<I+1, SkipNext>::parse(owner, stream);
       if (!next_result.success()) {
-        return ResultType(
-            Trace("Sequence", stream, "",
-                  {std::move(next_result).get_trace()}));
+        auto trace = Trace(
+            owner, stream, "", {std::move(next_result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -112,22 +112,19 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<I>(parsers)->parse(stream);
+    static ResultType parse(const SequenceParser* owner, StreamType* stream) {
+      auto result = std::get<I>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream,
-                                "",
-                                {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       auto next_result =
-          RecursiveSequenceParser<I+1, SkipNext>::parse(parsers, stream);
+          RecursiveSequenceParser<I+1, SkipNext>::parse(owner, stream);
       if (!next_result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream,
-                                "",
-                                {std::move(next_result).get_trace()}));
+        auto trace = Trace(
+            owner, stream, "", {std::move(next_result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -145,13 +142,11 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
+    static ResultType parse(const SequenceParser* owner, StreamType* stream) {
+      auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream,
-                                "",
-                                {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number();
@@ -168,13 +163,11 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StorageType& parsers, StreamType* stream) {
-      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
+    static ResultType parse(const SequenceParser* owner, StreamType* stream) {
+      auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace("Sequence",
-                                stream,
-                                "",
-                                {std::move(result).get_trace()}));
+        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
+        return ResultType(std::move(trace));
       }
 
       size_t consumed = result.get_consumed_number();

@@ -32,10 +32,8 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
       return ResultType(consumed_number, ValueType());
     }
 
-    return ResultType(Trace("Skipped",
-                            stream,
-                            "",
-                            {std::move(result).get_trace()}));
+    auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
+    return ResultType(std::move(trace));
   }
 
  private:

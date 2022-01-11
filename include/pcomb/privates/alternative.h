@@ -53,7 +53,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
   using StreamType = IStream<CharType>;
   using StorageType = std::tuple<ParserPointer<P1>, ParserPointer<PS>...>;
   using ParsersType = std::tuple<P1, PS...>;
-  using LogType = std::list<Trace>;
+  using LogType = Trace::LogType;
   using TraceBuilderType = std::function<Trace(StreamType*, LogType*)>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
@@ -68,7 +68,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
     LogType log;
     auto trace_builder = TraceBuilderType(
         [this](StreamType* stream, LogType* log) {
-          return Trace(this->name(), stream, "", std::move(*log));
+          return Trace(this, stream, "", std::move(*log));
         });
     return RecursiveAlternativeParser<0>::parse(
         parsers_, stream, &log, trace_builder);

@@ -18,10 +18,10 @@ class Trace {
         const StreamPointer& stream,
         const std::string& message = "",
         LogType&& nested = {})
-      : parser_name_(parser->name())
-      , position_(stream->position())
-      , message_(message)
-      , nested_(std::forward<LogType>(nested)) {
+      : parser_name_(parser->name()),
+        position_(stream->position()),
+        message_(message),
+        nested_(std::forward<LogType>(nested)) {
   }
 
   std::string to_string(size_t nesting_level = 0) const;

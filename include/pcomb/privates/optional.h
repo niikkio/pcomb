@@ -8,6 +8,8 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename P>
@@ -23,7 +25,9 @@ class OptionalParser : public Parser<typename P::CharType,
 
  public:
   explicit OptionalParser(ParserPointer<P>&& p)
-      : parser_(std::forward<ParserPointer<P>>(p)) { }
+      : parser_(std::forward<ParserPointer<P>>(p)) {
+    this->name_ = OPTIONAL_PARSER_NAME;
+  }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);

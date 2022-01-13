@@ -10,6 +10,8 @@
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename P, typename F>
@@ -28,13 +30,14 @@ class StrictAdaptiveParser
   explicit StrictAdaptiveParser(ParserPointer<P>&& p, F&& f)
       : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
+    this->name_ = STRICT_ADAPTIVE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
     if (!result.success()) {
-      auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+                              {std::move(result).get_trace()}));
     }
 
     size_t consumed_number = result.get_consumed_number();

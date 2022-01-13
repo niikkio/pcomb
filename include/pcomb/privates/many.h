@@ -9,6 +9,8 @@
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename P>
@@ -31,6 +33,7 @@ class ManyParser : public ManyBaseType<P> {
         min_count_(min_count),
         max_count_(0),
         is_unlimited_(true) {
+    this->name_ = MANY_PARSER_NAME;
   }
 
   ManyParser(ParserPointer<P>&& parser, size_t min_count, size_t max_count)
@@ -38,6 +41,7 @@ class ManyParser : public ManyBaseType<P> {
         min_count_(min_count),
         max_count_(max_count),
         is_unlimited_(false) {
+    this->name_ = MANY_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -60,11 +64,10 @@ class ManyParser : public ManyBaseType<P> {
       stream->consume(consumed_number);
       return ResultType(consumed_number, std::move(values));
     }
-    auto message = "not enough results: " +
-                   std::to_string(min_count_) + " > " +
-                   std::to_string(values.size());
 
-    return ResultType(Trace(this, stream, std::move(message)));
+    return ResultType(Trace(this, stream,
+                            NOT_ENOUGH_RESULTS_ERROR_MESSAGE(values.size(),
+                                                             min_count_)));
   }
 
  private:

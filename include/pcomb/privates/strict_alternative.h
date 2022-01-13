@@ -10,7 +10,9 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
-#include "pcomb/privates/common.h"
+
+#include "pcomb/privates/magic.h"
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -37,6 +39,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   explicit StrictAlternativeParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
+    this->name_ = STRICT_ALTERNATIVE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -72,8 +75,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
                                     std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      auto trace = Trace(owner, stream, "", std::move(*log));
-      return ResultType(std::move(trace));
+      return ResultType(Trace(owner, stream, EMPTY_MESSAGE, std::move(*log)));
     }
   };
 

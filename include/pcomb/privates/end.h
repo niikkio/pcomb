@@ -3,12 +3,13 @@
 
 #include <utility>
 
-#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
 #include "pcomb/privates/common.h"
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -29,8 +30,7 @@ class EndParser : public Parser<C, NoValue> {
 
   ResultType parse(StreamType* stream) const override {
     if (!stream->empty()) {
-      auto trace = Trace(this, stream, END_PARSER_ERROR_MESSAGE);
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream, EOF_WAS_EXPECTED_ERROR_MESSAGE()));
     }
 
     return ResultType(0, ValueType());

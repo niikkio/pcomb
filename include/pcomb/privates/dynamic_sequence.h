@@ -4,11 +4,12 @@
 #include <list>
 #include <utility>
 
-#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -43,8 +44,8 @@ class DynamicSequenceParser : public Parser<
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
       auto result = (*it)->parse(stream_copy.get());
       if (!result.success()) {
-        auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
-        return ResultType(std::move(trace));
+        return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+                                {std::move(result).get_trace()}));
       }
 
       consumed_number += result.get_consumed_number();

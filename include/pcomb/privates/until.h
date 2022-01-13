@@ -8,6 +8,8 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename P>
@@ -26,7 +28,9 @@ class UntilParser : public UntilBaseType<P> {
 
  public:
   explicit UntilParser(ParserPointer<P>&& parser)
-      : parser_(std::forward<ParserPointer<P>>(parser)) { }
+      : parser_(std::forward<ParserPointer<P>>(parser)) {
+    this->name_ = UNTIL_PARSER_NAME;
+  }
 
   ResultType parse(StreamType* stream) const override {
     auto stream_copy = stream->clone();

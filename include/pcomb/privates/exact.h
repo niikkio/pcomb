@@ -3,11 +3,12 @@
 
 #include <utility>
 
-#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -32,13 +33,13 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
 
     auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
-      auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+                              {std::move(result).get_trace()}));
     }
 
     if (!stream_copy->empty()) {
-      auto trace = Trace(this, stream, EXACT_PARSER_ERROR_MESSAGE(stream_copy));
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream,
+                              EOF_WAS_EXPECTED_ERROR_MESSAGE(stream_copy)));
     }
 
     stream->consume(result.get_consumed_number());

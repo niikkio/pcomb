@@ -7,7 +7,10 @@
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
-#include "pcomb/privates/common.h"
+#include "pcomb/trace.h"
+
+#include "pcomb/privates/magic.h"
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -33,6 +36,7 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   explicit StrictSequenceParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
+    this->name_ = STRICT_SEQUENCE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -62,15 +66,14 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
                             StreamType* stream) {
       auto result = std::get<I>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
-        return ResultType(std::move(trace));
+        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
+                                {std::move(result).get_trace()}));
       }
 
       auto next_result = RecursiveSequenceParser<I+1>::parse(owner, stream);
       if (!next_result.success()) {
-        auto trace = Trace(
-            owner, stream, "", {std::move(next_result).get_trace()});
-        return ResultType(std::move(trace));
+        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
+                                {std::move(next_result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -94,8 +97,8 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
                             StreamType* stream) {
       auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
       if (!result.success()) {
-        auto trace = Trace(owner, stream, "", {std::move(result).get_trace()});
-        return ResultType(std::move(trace));
+        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
+                                {std::move(result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number();

@@ -10,6 +10,8 @@
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename T>
@@ -26,14 +28,12 @@ class PredicateParser : public Parser<T, T> {
  public:
   explicit PredicateParser(PredicateType&& predicate)
       : predicate_(std::forward<PredicateType>(predicate)) {
-    this->name_ = "Predicate Parser";
+    this->name_ = PREDICATE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
     if (stream->empty()) {
-      auto message = "character not found";
-      auto trace = Trace(this, stream, std::move(message));
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream, EMPTY_STREAM_ERROR_MESSAGE));
     }
 
     CharType ch(stream->head());
@@ -42,9 +42,7 @@ class PredicateParser : public Parser<T, T> {
       return ResultType(1, std::move(ch));
     }
 
-    auto message = "unexpected character: \'" + std::string(1, ch) + "\'";
-    auto trace = Trace(this, stream, std::move(message));
-    return ResultType(std::move(trace));
+    return ResultType(Trace(this, stream, UNEXPECTED_CHAR_ERROR_MESSAGE(ch)));
   }
 
  private:

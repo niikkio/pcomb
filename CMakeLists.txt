@@ -11,7 +11,6 @@ find_package(Boost REQUIRED)
 set(PCOMB_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/pcomb")
 
 add_library(pcomb SHARED
-    ${PCOMB_SOURCE_DIR}/const.cc
     ${PCOMB_SOURCE_DIR}/stream_position.cc
     ${PCOMB_SOURCE_DIR}/string_stream.cc
     ${PCOMB_SOURCE_DIR}/trace.cc

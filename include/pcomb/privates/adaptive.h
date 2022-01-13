@@ -5,11 +5,12 @@
 #include <tuple>
 #include <utility>
 
-#include "pcomb/const.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -70,8 +71,8 @@ class AdaptiveParser
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
     if (!result.success()) {
-      auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
-      return ResultType(std::move(trace));
+      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+                              {std::move(result).get_trace()}));
     }
 
     size_t consumed_number = result.get_consumed_number();

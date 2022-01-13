@@ -7,7 +7,9 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
 #include "pcomb/privates/common.h"
+#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -23,7 +25,9 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
 
  public:
   explicit SkippedParser(ParserPointer<P>&& parser)
-      : parser_(std::forward<ParserPointer<P>>(parser)) { }
+      : parser_(std::forward<ParserPointer<P>>(parser)) {
+    this->name_ = SKIPPED_PARSER_NAME;
+  }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
@@ -32,8 +36,8 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
       return ResultType(consumed_number, ValueType());
     }
 
-    auto trace = Trace(this, stream, "", {std::move(result).get_trace()});
-    return ResultType(std::move(trace));
+    return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+                            {std::move(result).get_trace()}));
   }
 
  private:

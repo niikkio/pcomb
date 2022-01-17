@@ -13,7 +13,7 @@ namespace pcomb {
 template <typename Ch>
 inline auto Char(Ch ch) {
   std::stringstream name;
-  name << "Char(" << ch << ")";
+  name << "Char(\'" << ch << "\')";
   return with_name(make<privates::PredicateParser<Ch>>(
       [ch](Ch c) { return c == ch; }), name.str());
 }

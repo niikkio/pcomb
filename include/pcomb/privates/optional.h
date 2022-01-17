@@ -2,13 +2,14 @@
 #define PCOMB_PRIVATES_OPTIONAL_H_
 
 #include <optional>
+#include <string>
 #include <utility>
 
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -23,10 +24,14 @@ class OptionalParser : public Parser<typename P::CharType,
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Optional " + wrapped(parser_);
+  }
+
  public:
   explicit OptionalParser(ParserPointer<P>&& p)
       : parser_(std::forward<ParserPointer<P>>(p)) {
-    this->name_ = OPTIONAL_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

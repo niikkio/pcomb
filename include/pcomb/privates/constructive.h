@@ -1,15 +1,17 @@
 #ifndef PCOMB_PRIVATES_CONSTRUCTIVE_H_
 #define PCOMB_PRIVATES_CONSTRUCTIVE_H_
 
+#include <string>
 #include <tuple>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -65,16 +67,20 @@ class ConstructiveParser : public Parser<typename P::CharType, T> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Constructive " + wrapped(parser_);
+  }
+
  public:
   explicit ConstructiveParser(ParserPointer<P>&& p)
       : parser_(std::forward<ParserPointer<P>>(p)) {
-    this->name_ = CONSTRUCTIVE_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
     if (!result.success()) {
-      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+      return ResultType(Trace(this, stream, messages::NO_MESSAGE,
                               {std::move(result).get_trace()}));
     }
 

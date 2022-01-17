@@ -10,65 +10,81 @@
 #include "pcomb/alternative.h"
 #include "pcomb/lazy.h"
 #include "pcomb/lexeme.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 #include "pcomb/skipped.h"
 #include "pcomb/string_stream.h"
-
-using Stream = pcomb::StringStream;
-using pcomb::Adapted;
-using pcomb::Any;
-using pcomb::Char;
-using pcomb::Digit;
-using pcomb::Lazy;
-using pcomb::Seq;
-using pcomb::Skip;
+#include "pcomb/trace.h"
 
 class LazyParserTest : public ::testing::Test {
- private:
+ protected:
   class TreeParser : public pcomb::Parser<char, std::shared_ptr<Tree>> {
     // "(Tree)<v>(Tree)" OR "v"
+   protected:
+    std::string to_string_without_name() const override {
+      return "Tree";
+    }
+
    public:
     using CharType = char;
     using ValueType = Tree::Pointer;
+
+    TreeParser() {
+      this->name_ = "T";
+    }
 
    private:
     using ResultType = pcomb::Result<ValueType>;
     using StreamType = pcomb::IStream<CharType>;
 
     auto Int() const {
+      using pcomb::Adapted, pcomb::Digit;
       return Adapted(Digit(), &char2int);
     }
 
     auto E1() const {
+      using pcomb::Adapted;
       return Adapted(Int(), &int2tree);
     }
 
     auto E2() const {
+      using pcomb::Adapted, pcomb::Seq, pcomb::Skip, pcomb::Lazy, pcomb::Char;
       return Adapted(Seq(Skip(Char('(')), Lazy(this), Skip(Char(')')),
-                         Skip(Char('<')), Int(),        Skip(Char('>')),
+                         Skip(Char('<')), Int(),      Skip(Char('>')),
                          Skip(Char('(')), Lazy(this), Skip(Char(')'))),
                      &seq2tree);
     }
 
    public:
     ResultType parse(StreamType* stream) const override {
-      return Any(E1(), E2())->parse(stream);
+      auto result = pcomb::Any(E1(), E2())->parse(stream);
+      if (!result.success()) {
+        return ResultType(pcomb::Trace(this, stream,
+                                       pcomb::messages::NO_MESSAGE,
+                                       {std::move(result).get_trace()}));
+      }
+      return result;
     }
   };
-
- protected:
-  static auto pTree() {
-    return TreeParser();
-  }
 };
 
+TEST_F(LazyParserTest, Name1) {
+  auto tree_parser = TreeParser();
+  auto parser = pcomb::Lazy(&tree_parser);
+  TestParserName(parser, "Lazy <Lazy [Tree]>");
+}
+
+TEST_F(LazyParserTest, Name2) {
+  auto parser = pcomb::make<TreeParser>();
+  TestParserName(parser, "T <Tree>");
+}
+
 TEST_F(LazyParserTest, Tree) {
-  auto parser = pTree();
+  pcomb::StringStream s("((1)<2>(3))<4>(5)");
+  auto parser = pcomb::make<TreeParser>();
 
-  Stream s("((1)<2>(3))<4>(5)");
-
-  auto res = parser.parse(&s);
+  auto res = parser->parse(&s);
   EXPECT_TRUE(res.success());
   EXPECT_EQ(res.get_consumed_number(), 17);
 
@@ -88,4 +104,11 @@ TEST_F(LazyParserTest, Tree) {
 
   ASSERT_TRUE(tree->R != nullptr);
   EXPECT_THAT(tree->R->v, 5);
+}
+
+TEST_F(LazyParserTest, DISABLED_TreeFail1) {
+  auto input = "((1)<2>3))<4>(5)";
+  auto parser = pcomb::make<TreeParser>();
+
+  TestParserFail(input, parser, "OK");
 }

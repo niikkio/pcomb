@@ -7,43 +7,54 @@
 #include "pcomb/optional.h"
 #include "pcomb/predicate.h"
 
-using pcomb::Char;
-using pcomb::Opt;
-using pcomb::ParseWithDefault;
+class OptionalParserTest : public ::testing::Test { };
 
-class OptionalParserTest : public ::testing::Test {
- protected:
-  static auto pA() {
-    return Opt(Char('A'));
-  }
+TEST_F(OptionalParserTest, Name1) {
+  auto parser = pcomb::Opt(pcomb::Char('A'));
+  TestParserName(parser, "Opt <Optional [Predicate]>");
+}
 
-  static auto pAB() {
-    return ParseWithDefault(Char('A'), 'B');
-  }
-
-  using ExpectedA = std::optional<char>;
-};
+TEST_F(OptionalParserTest, Name2) {
+  auto parser = pcomb::WithDefault(pcomb::Char('A'), 'B');
+  auto expected_name = "WithDefault('B') <Adaptive [Optional [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(OptionalParserTest, Empty) {
-  TestParserSuccess("", pA(), ExpectedA{}, 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::Opt(pcomb::Char('A'));
+  auto expected = std::optional<char>{};
+  TestParserSuccess(input, parser, expected, 0, CheckEmpty());
 }
 
 TEST_F(OptionalParserTest, HeadMatch) {
-  TestParserSuccess("AB", pA(), ExpectedA{'A'}, 1, CheckNotEmpty('B'));
+  auto input = "AB";
+  auto parser = pcomb::Opt(pcomb::Char('A'));
+  auto expected = std::optional<char>{'A'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(OptionalParserTest, HeadNotMatch) {
-  TestParserSuccess("BA", pA(), ExpectedA{}, 0, CheckNotEmpty('B'));
+  auto input = "BA";
+  auto parser = pcomb::Opt(pcomb::Char('A'));
+  auto expected = std::optional<char>{};
+  TestParserSuccess(input, parser, expected, 0, CheckNotEmpty('B'));
 }
 
 TEST_F(OptionalParserTest, EmptyWithDefault) {
-  TestParserSuccess("", pAB(), 'B', 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::WithDefault(pcomb::Char('A'), 'B');
+  TestParserSuccess(input, parser, 'B', 0, CheckEmpty());
 }
 
 TEST_F(OptionalParserTest, HeadMatchWithDefault) {
-  TestParserSuccess("AB", pAB(), 'A', 1, CheckNotEmpty('B'));
+  auto input = "AB";
+  auto parser = pcomb::WithDefault(pcomb::Char('A'), 'B');
+  TestParserSuccess(input, parser, 'A', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(OptionalParserTest, HeadNotMatchWithDefault) {
-  TestParserSuccess("BA", pAB(), 'B', 0, CheckNotEmpty('B'));
+  auto input = "BA";
+  auto parser = pcomb::WithDefault(pcomb::Char('A'), 'B');
+  TestParserSuccess(input, parser, 'B', 0, CheckNotEmpty('B'));
 }

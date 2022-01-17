@@ -1,15 +1,16 @@
 #ifndef PCOMB_PRIVATES_SKIPPED_H_
 #define PCOMB_PRIVATES_SKIPPED_H_
 
+#include <string>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
 #include "pcomb/privates/common.h"
-#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -23,10 +24,14 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Skipped " + wrapped(parser_);
+  }
+
  public:
   explicit SkippedParser(ParserPointer<P>&& parser)
       : parser_(std::forward<ParserPointer<P>>(parser)) {
-    this->name_ = SKIPPED_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -36,7 +41,7 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
       return ResultType(consumed_number, ValueType());
     }
 
-    return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+    return ResultType(Trace(this, stream, messages::NO_MESSAGE,
                             {std::move(result).get_trace()}));
   }
 

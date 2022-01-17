@@ -5,12 +5,11 @@
 #include <string>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
-
-#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -25,15 +24,19 @@ class PredicateParser : public Parser<T, T> {
   using StreamType = IStream<CharType>;
   using PredicateType = std::function<bool(const CharType&)>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Predicate";
+  }
+
  public:
   explicit PredicateParser(PredicateType&& predicate)
       : predicate_(std::forward<PredicateType>(predicate)) {
-    this->name_ = PREDICATE_PARSER_NAME;
   }
 
   ResultType parse(StreamType* stream) const override {
     if (stream->empty()) {
-      return ResultType(Trace(this, stream, EMPTY_STREAM_ERROR_MESSAGE));
+      return ResultType(Trace(this, stream, messages::EMPTY_STREAM));
     }
 
     CharType ch(stream->head());
@@ -42,7 +45,7 @@ class PredicateParser : public Parser<T, T> {
       return ResultType(1, std::move(ch));
     }
 
-    return ResultType(Trace(this, stream, UNEXPECTED_CHAR_ERROR_MESSAGE(ch)));
+    return ResultType(Trace(this, stream, messages::UNEXPECTED_CHAR(ch)));
   }
 
  private:

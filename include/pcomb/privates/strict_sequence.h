@@ -1,16 +1,19 @@
 #ifndef PCOMB_PRIVATE_STRICT_SEQUENCE_H_
 #define PCOMB_PRIVATE_STRICT_SEQUENCE_H_
 
+#include <functional>
+#include <string>
 #include <tuple>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
+#include "pcomb/privates/common.h"
 #include "pcomb/privates/magic.h"
-#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -30,20 +33,31 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
   using StreamType = IStream<CharType>;
   using ParsersType = std::tuple<P1, PS...>;
   using StorageType = std::tuple<ParserPointer<P1>, ParserPointer<PS>...>;
+  using LogType = Trace::LogType;
+  using TraceBuilderType = std::function<Trace(LogType&&)>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
+
+ protected:
+  std::string to_string_without_name() const override {
+    return "Strict Sequence " + wrapped(parsers_);
+  }
 
  public:
   explicit StrictSequenceParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
-    this->name_ = STRICT_SEQUENCE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {
+    auto trace_builder = TraceBuilderType(
+        [this, stream](LogType&& log) {
+          return Trace(this, stream, messages::NO_MESSAGE,
+                       std::forward<LogType>(log));
+        });
     auto stream_copy = stream->clone();
+    auto result = RecursiveSequenceParser<0>::parse(
+        parsers_, trace_builder, stream_copy.get());
 
-    auto result =
-        RecursiveSequenceParser<0>::parse(this, stream_copy.get());
     if (result.success()) {
       stream->consume(result.get_consumed_number());
     }
@@ -62,18 +76,19 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StrictSequenceParser* owner,
+    static ResultType parse(const StorageType& parsers,
+                            const TraceBuilderType& trace_builder,
                             StreamType* stream) {
-      auto result = std::get<I>(owner->parsers_)->parse(stream);
+      auto result = std::get<I>(parsers)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
-                                {std::move(result).get_trace()}));
+        return ResultType(trace_builder({std::move(result).get_trace()}));
       }
 
-      auto next_result = RecursiveSequenceParser<I+1>::parse(owner, stream);
+      auto next_result = RecursiveSequenceParser<I+1>::parse(
+          parsers, trace_builder, stream);
+
       if (!next_result.success()) {
-        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
-                                {std::move(next_result).get_trace()}));
+        return ResultType(std::move(next_result).get_trace());
       }
 
       size_t consumed = result.get_consumed_number() +
@@ -93,12 +108,12 @@ class StrictSequenceParser : public StrictSequenceBaseType<P1, PS...> {
     using ResultType = Result<ValueType>;
 
    public:
-    static ResultType parse(const StrictSequenceParser* owner,
+    static ResultType parse(const StorageType& parsers,
+                            const TraceBuilderType& trace_builder,
                             StreamType* stream) {
-      auto result = std::get<StorageSize-1>(owner->parsers_)->parse(stream);
+      auto result = std::get<StorageSize-1>(parsers)->parse(stream);
       if (!result.success()) {
-        return ResultType(Trace(owner, stream, EMPTY_MESSAGE,
-                                {std::move(result).get_trace()}));
+        return ResultType(trace_builder({std::move(result).get_trace()}));
       }
 
       size_t consumed = result.get_consumed_number();

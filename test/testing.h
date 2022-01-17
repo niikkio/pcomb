@@ -15,6 +15,24 @@
 using StreamCheck = std::function<void(const pcomb::StringStream&)>;
 using StreamPosition = pcomb::StreamPosition;
 
+template <typename ParserPointer>
+inline auto TestParserName(const ParserPointer& parser,
+                           const std::string& expected_name) {
+  EXPECT_EQ(parser->to_string(), expected_name);
+}
+
+template <typename ParserPointer>
+inline auto MakeTrace(const ParserPointer& parser, StreamPosition&& pos,
+                      const std::string& message = "") {
+  std::stringstream ss;
+  ss << parser->to_string() << " failed at " << pos.to_string();
+  if (message.size() > 0) {
+    ss << " [" << message << "]";
+  }
+  ss << "\n";
+  return ss.str();
+}
+
 inline StreamCheck CheckEmpty() {
   return [](const pcomb::StringStream& s) {
            EXPECT_TRUE(s.empty());
@@ -66,13 +84,18 @@ inline void TestContainerParserSuccess(std::string input,
 }
 
 template <typename Parser>
-inline void TestContainerParserFail(std::string input, const Parser& parser) {
+inline void TestContainerParserFail(std::string input, const Parser& parser,
+                                    const std::string& expected_trace = "") {
   pcomb::StringStream s(std::move(input));
   auto check = s.empty() ? CheckEmpty() : CheckNotEmpty(s.head());
 
   auto res = parser->parse(&s);
   EXPECT_FALSE(res.success());
   EXPECT_EQ(res.get_consumed_number(), 0);
+
+  if (expected_trace.size() > 0) {
+    EXPECT_EQ(res.get_trace().to_string(), expected_trace);
+  }
 
   check(s);
 }

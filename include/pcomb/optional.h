@@ -2,6 +2,7 @@
 #define PCOMB_OPTIONAL_H_
 
 #include <functional>
+#include <sstream>
 #include <utility>
 
 #include "pcomb/adaptive.h"
@@ -19,8 +20,7 @@ inline auto Opt(ParserPointer<P>&& parser) {
 }
 
 template <typename P, typename T>
-inline auto ParseWithDefault(ParserPointer<P>&& parser,
-                             const T& default_value) {
+inline auto WithDefault(ParserPointer<P>&& parser, const T& default_value) {
   auto maybe = Opt(std::forward<ParserPointer<P>>(parser));
 
   using R = typename decltype(maybe)::element_type::ValueType;
@@ -30,8 +30,9 @@ inline auto ParseWithDefault(ParserPointer<P>&& parser,
         return opt.value_or(default_value);
       };
 
-  return with_name(Adapted(std::move(maybe), std::move(adapter)),
-                   "ParseWithDefault");
+  std::stringstream name;
+  name << "WithDefault('" << default_value << "')";
+  return with_name(Adapted(std::move(maybe), std::move(adapter)), name.str());
 }
 
 }  // namespace pcomb

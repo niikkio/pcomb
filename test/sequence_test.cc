@@ -1,88 +1,177 @@
 #include <gtest/gtest.h>
 
+#include <sstream>
 #include <tuple>
 
 #include "testing.h"
 
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 #include "pcomb/skipped.h"
 
-using pcomb::Char;
-using pcomb::Seq;
-using pcomb::Skip;
+class SequenceParserTest : public ::testing::Test { };
 
-class SequenceParserTest : public ::testing::Test {
- protected:
-  static auto pA() {
-    return Seq(Char('A'));
-  }
+TEST_F(SequenceParserTest, Name1) {
+  auto parser = pcomb::Seq(pcomb::Char('A'));
+  TestParserName(parser, "Seq <Sequence [Predicate]>");
+}
 
-  static auto expectedA() {
-    return 'A';
-  }
+TEST_F(SequenceParserTest, Name2) {
+  using pcomb::Seq, pcomb::Char;
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+  auto expected_name = "Seq <Sequence [Predicate, Predicate, Predicate]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pABC() {
-    return Seq(Char('A'), Char('B'), Char('C'));
-  }
+TEST_F(SequenceParserTest, Name3) {
+  using pcomb::Seq, pcomb::Skip, pcomb::Char;
+  auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
+  auto expected_name =
+      "Seq <Sequence [Skipped [Predicate], Skipped [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto expectedABC() {
-    return std::tuple<char, char, char>('A', 'B', 'C');
-  }
-
-  static auto pSkippedASkippedB() {
-    return Seq(Skip(Char('A')), Skip(Char('B')));
-  }
-
-  static auto expectedSkippedASkippedB() {
-    return decltype(pSkippedASkippedB())::element_type::ValueType();
-  }
-
-  static auto pABCwithSkippedBraces() {
-      return Seq(
-          Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
-  }
-};
+TEST_F(SequenceParserTest, Name4) {
+  using pcomb::Seq, pcomb::Skip, pcomb::Char;
+  auto parser =
+      Seq(Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
+  auto expected_name = "Seq <Sequence [Skipped [Predicate], Predicate, "
+                       "Predicate, Predicate, Skipped [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(SequenceParserTest, Seq1Match) {
-  TestParserSuccess("A", pA(), expectedA(), 1, CheckEmpty());
+  auto input = "A";
+  auto parser = pcomb::Seq(pcomb::Char('A'));
+  TestParserSuccess(input, parser, 'A', 1, CheckEmpty());
 }
 
 TEST_F(SequenceParserTest, Seq1NotMatch) {
-  TestParserFail("B", pA());
+  auto input = "B";
+  auto parser = pcomb::Seq(pcomb::Char('A'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  trace << '\t' << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Seq3Match) {
-  TestParserSuccess("ABC", pABC(), expectedABC(), 3, CheckEmpty());
+  using pcomb::Seq, pcomb::Char;
+  auto input = "ABC";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+  auto expected = std::tuple<char, char, char>('A', 'B', 'C');
+  TestParserSuccess(input, parser, expected, 3, CheckEmpty());
+}
+
+TEST_F(SequenceParserTest, Seq3Empty1) {
+  using pcomb::Seq, pcomb::Char;
+  auto input = "";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << '\t' << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
+}
+
+TEST_F(SequenceParserTest, Seq3Empty2) {
+  using pcomb::Seq, pcomb::Char;
+  auto input = "A";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << '\t' << MakeTrace(pcomb::Char('B'), {1, 0, 1}, message);
+
+  TestParserFail(input, parser, trace.str());
+}
+
+TEST_F(SequenceParserTest, Seq3Empty3) {
+  using pcomb::Seq, pcomb::Char;
+  auto input = "AB";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << '\t' << MakeTrace(pcomb::Char('C'), {2, 0, 2}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch1) {
-  TestParserFail("", pABC());
+  using pcomb::Seq, pcomb::Char;
+  auto input = "D";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << '\t' << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch2) {
-  TestParserFail("A", pABC());
+  using pcomb::Seq, pcomb::Char;
+  auto input = "AD";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << '\t' << MakeTrace(pcomb::Char('B'), {1, 0, 1}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Seq3NotMatch3) {
-  TestParserFail("AB", pABC());
-}
+  using pcomb::Seq, pcomb::Char;
+  auto input = "ABD";
+  auto parser = Seq(Char('A'), Char('B'), Char('C'));
 
-TEST_F(SequenceParserTest, Seq3NotMatch4) {
-  TestParserFail("ABB", pABC());
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << '\t' << MakeTrace(pcomb::Char('C'), {2, 0, 2}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Skip2) {
-  TestParserSuccess("ABC", pSkippedASkippedB(),
-                    expectedSkippedASkippedB(), 2,
-                    CheckNotEmpty('C'));
+  using pcomb::Seq, pcomb::Skip, pcomb::Char;
+  auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
+  auto input = "ABC";
+  auto expected = decltype(parser)::element_type::ValueType();
+  TestParserSuccess(input, parser, expected, 2, CheckNotEmpty('C'));
 }
 
 TEST_F(SequenceParserTest, Skip2NotEnough) {
-  TestParserFail("A", pSkippedASkippedB());
+  using pcomb::Seq, pcomb::Skip, pcomb::Char;
+  auto input = "A";
+  auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  trace << "\t" << MakeTrace(Skip(Char('B')), {1, 0, 1});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << "\t\t" << MakeTrace(Char('B'), {1, 0, 1}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(SequenceParserTest, Brackets) {
-  TestParserSuccess("(ABC)", pABCwithSkippedBraces(),
-                    expectedABC(), 5, CheckEmpty());
+  using pcomb::Seq, pcomb::Skip, pcomb::Char;
+  auto input = "(ABC)";
+  auto parser =
+      Seq(Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
+  auto expected = std::tuple<char, char, char>('A', 'B', 'C');
+  TestParserSuccess(input, parser, expected, 5, CheckEmpty());
 }

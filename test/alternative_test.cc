@@ -8,122 +8,152 @@
 
 #include "pcomb/alternative.h"
 #include "pcomb/many.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 #include "pcomb/skipped.h"
 
-using pcomb::Any;
-using pcomb::Char;
-using pcomb::Many;
-using pcomb::Skip;
-using pcomb::Some;
+class AlternativeParserTest : public ::testing::Test { };
 
-class AlternativeParserTest : public ::testing::Test {
- protected:
-  static auto pA() {
-    return with_name(Any(Char('A')), "pA");
-  }
+TEST_F(AlternativeParserTest, Name1) {
+  auto parser = pcomb::Any(pcomb::Char('A'));
+  TestParserName(parser, "Any <Alternative [Predicate]>");
+}
 
-  static auto traceA(char ch) {
-    std::stringstream ss;
-    ss << pA()->name() << " failed at [0,0,0]\n"
-       << "\t" << Char('A')->name() << " failed at [0,0,0]"
-       << " [unexpected character: \'" << ch << "\']\n";
-    return ss.str();
-  }
+TEST_F(AlternativeParserTest, Name2) {
+  using pcomb::Any, pcomb::Char;
+  auto parser = Any(Char('A'), Char('B'), Char('C'));
+  auto expected_name = "Any <Alternative [Predicate, Predicate, Predicate]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pABC() {
-    return with_name(Any(Char('A'), Char('B'), Char('C')), "pABC");
-  }
+TEST_F(AlternativeParserTest, Name3) {
+  using pcomb::Any, pcomb::Char, pcomb::Some;
+  auto parser = Any(Char('A'), Some(Char('B')));
+  auto expected_name = "Any <Alternative [Predicate, Many [1..] [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto traceABC(char c) {
-    std::stringstream ss;
-    ss << pABC()->name() << " failed at [0,0,0]\n"
-       << "\t" << Char('A')->name() << " failed at [0,0,0] "
-       << "[unexpected character: \'" << c << "\']\n"
-       << "\t" << Char('B')->name() << " failed at [0,0,0] "
-       << "[unexpected character: \'" << c << "\']\n"
-       << "\t" << Char('C')->name() << " failed at [0,0,0] "
-       << "[unexpected character: \'" << c << "\']\n";
-    return ss.str();
-  }
+TEST_F(AlternativeParserTest, Name4) {
+  using pcomb::Many, pcomb::Any, pcomb::Some, pcomb::Char;
+  auto parser = Many(Any(Some(Char('A')), Some(Char('B'))));
+  auto expected_name = "Many <Many [0..] [Alternative ["
+                       "Many [1..] [Predicate], Many [1..] [Predicate]]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pABs() {
-    return Any(Char('A'), Some(Char('B')));
-  }
+TEST_F(AlternativeParserTest, Name5) {
+  using pcomb::Any, pcomb::Skip, pcomb::Some, pcomb::Char;
+  auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
+  auto expected_name = "Any <Alternative [Skipped [Many [1..] [Predicate]], "
+                                         "Skipped [Many [1..] [Predicate]]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto expectedABs_A() {
-    return std::variant<char, std::list<char>> {
-        std::in_place_index<0>, 'A'};
-  }
+TEST_F(AlternativeParserTest, SingleEmpty) {
+  auto input = "";
+  auto parser = pcomb::Any(pcomb::Char('A'));
 
-  static auto expectedABs_Bs(size_t n) {
-    return std::variant<char, std::list<char>> {
-        std::in_place_index<1>, std::list<char>(n, 'B')};
-  }
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << "\t" << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
 
-  static auto pManyAsBs() {
-    return Many(Any(Some(Char('A')), Some(Char('B'))));
-  }
-
-  using ExpectedManyAsBs = std::list<std::list<char>>;
-
-  static auto pSkippedAsSkippedBs() {
-    return Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
-  }
-
-  static auto expectedSkippedAsSkippedBs() {
-    return decltype(pSkippedAsSkippedBs())::element_type::ValueType();
-  }
-};
+  TestParserFail(input, parser, trace.str());
+}
 
 TEST_F(AlternativeParserTest, SingleMatch) {
-  TestParserSuccess("A", pA(), 'A', 1, CheckEmpty());
+  auto input = "A";
+  auto parser = pcomb::Any(pcomb::Char('A'));
+  TestParserSuccess(input, parser, 'A', 1, CheckEmpty());
 }
 
 TEST_F(AlternativeParserTest, SingleNotMatch) {
-  TestParserFail("B", pA(), traceA('B'));
+  auto input = "B";
+  auto parser = pcomb::Any(pcomb::Char('A'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  trace << "\t" << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(AlternativeParserTest, NotMatch) {
-  TestParserFail("D", pABC(), traceABC('D'));
+  using pcomb::Any, pcomb::Char;
+  auto input = "D";
+  auto parser = Any(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << "\t" << MakeTrace(Char('A'), {0, 0, 0}, message);
+  trace << "\t" << MakeTrace(Char('B'), {0, 0, 0}, message);
+  trace << "\t" << MakeTrace(Char('C'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(AlternativeParserTest, Take1) {
-  TestParserSuccess("ABC", pABC(), 'A', 1, CheckNotEmpty('B'));
+  using pcomb::Any, pcomb::Char;
+  auto input = "ABC";
+  auto parser = Any(Char('A'), Char('B'), Char('C'));
+  TestParserSuccess(input, parser, 'A', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, Take2) {
-  TestParserSuccess("BCA", pABC(), 'B', 1, CheckNotEmpty('C'));
+  using pcomb::Any, pcomb::Char;
+  auto input = "BCA";
+  auto parser = Any(Char('A'), Char('B'), Char('C'));
+  TestParserSuccess(input, parser, 'B', 1, CheckNotEmpty('C'));
 }
 
 TEST_F(AlternativeParserTest, Take3) {
-  TestParserSuccess("CAB", pABC(), 'C', 1, CheckNotEmpty('A'));
+  using pcomb::Any, pcomb::Char;
+  auto input = "CAB";
+  auto parser = Any(Char('A'), Char('B'), Char('C'));
+  TestParserSuccess(input, parser, 'C', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(AlternativeParserTest, TakeOneOrMany1) {
-  TestParserSuccess("ABBB", pABs(),
-                    expectedABs_A(), 1, CheckNotEmpty('B'));
+  using pcomb::Any, pcomb::Char, pcomb::Some;
+  auto input = "ABBB";
+  auto parser = Any(Char('A'), Some(Char('B')));
+  auto expected = std::variant<char, std::list<char>> {
+      std::in_place_index<0>, 'A'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, TakeOneOrMany2) {
-  TestParserSuccess("BBBA", pABs(),
-                    expectedABs_Bs(3), 3, CheckNotEmpty('A'));
+  using pcomb::Any, pcomb::Char, pcomb::Some;
+  auto input = "BBBA";
+  auto parser = Any(Char('A'), Some(Char('B')));
+  auto expected = std::variant<char, std::list<char>> {
+      std::in_place_index<1>, std::list<char>(3, 'B')};
+  TestParserSuccess(input, parser, expected, 3, CheckNotEmpty('A'));
 }
 
 TEST_F(AlternativeParserTest, ManyAlternatives) {
-  auto expected = ExpectedManyAsBs {
+  using pcomb::Many, pcomb::Any, pcomb::Some, pcomb::Char;
+  auto input = "BBAAABAABBB";
+  auto parser = Many(Any(Some(Char('A')), Some(Char('B'))));
+  auto expected = std::list<std::list<char>>{
       {'B', 'B'}, {'A', 'A', 'A'}, {'B'}, {'A', 'A'}, {'B', 'B', 'B'}};
-
-  TestContainerParserSuccess("BBAAABAABBB", pManyAsBs(),
-                             expected, 11, CheckEmpty());
+  TestContainerParserSuccess(input, parser, expected, 11, CheckEmpty());
 }
 
 TEST_F(AlternativeParserTest, AlternativeSkipped1) {
-  TestParserSuccess("ABBBBBC", pSkippedAsSkippedBs(),
-                    expectedSkippedAsSkippedBs(), 1, CheckNotEmpty('B'));
+  using pcomb::Any, pcomb::Skip, pcomb::Some, pcomb::Char;
+  auto input = "ABBBBBC";
+  auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
+  auto expected = decltype(parser)::element_type::ValueType();
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(AlternativeParserTest, AlternativeSkipped2) {
-  TestParserSuccess("BBBBBAC", pSkippedAsSkippedBs(),
-                    expectedSkippedAsSkippedBs(), 5, CheckNotEmpty('A'));
+  using pcomb::Any, pcomb::Skip, pcomb::Some, pcomb::Char;
+  auto input = "BBBBBAC";
+  auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
+  auto expected = decltype(parser)::element_type::ValueType();
+  TestParserSuccess(input, parser, expected, 5, CheckNotEmpty('A'));
 }

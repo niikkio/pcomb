@@ -29,19 +29,23 @@ class Parser {
 
   virtual Result<ValueType> parse(IStream<CharType>* stream) const = 0;
 
-  std::string name() const {
-    return name_;
+  std::string to_string(bool with_name = true) const {
+    std::stringstream ss;
+    if (with_name) ss << name_ << " <";
+    ss << to_string_without_name();
+    if (with_name) ss << ">";
+    return ss.str();
   }
 
   friend ParserPointer<Parser>&& with_name(ParserPointer<Parser>&& p,
                                            const std::string& name) {
-    std::stringstream ss;
-    ss << name << " <" << p->name() << ">";
-    p->name_ = ss.str();
+    p->name_ = name;
     return std::forward<ParserPointer<Parser>>(p);
   }
 
  protected:
+  virtual std::string to_string_without_name() const = 0;
+
   std::string name_ = "Parser";
 };
 

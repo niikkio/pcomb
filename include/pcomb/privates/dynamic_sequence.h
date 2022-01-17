@@ -2,14 +2,16 @@
 #define PCOMB_PRIVATES_DYNAMIC_SEQUENCE_H_
 
 #include <list>
+#include <string>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -25,15 +27,18 @@ class DynamicSequenceParser : public Parser<
   using StreamType = IStream<CharType>;
   using StorageType = std::list<ParserPointer<P>>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Dynamic Sequence " + wrapped(parsers_);
+  }
+
  public:
   explicit DynamicSequenceParser(const StorageType& ps)
       : parsers_(ps) {
-    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME;
   }
 
   explicit DynamicSequenceParser(StorageType&& ps)
       : parsers_(std::forward<StorageType>(ps)) {
-    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -44,7 +49,7 @@ class DynamicSequenceParser : public Parser<
     for (auto it = parsers_.cbegin(); it != parsers_.cend(); ++it) {
       auto result = (*it)->parse(stream_copy.get());
       if (!result.success()) {
-        return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+        return ResultType(Trace(this, stream, messages::NO_MESSAGE,
                                 {std::move(result).get_trace()}));
       }
 

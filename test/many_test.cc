@@ -1,97 +1,150 @@
 #include <gtest/gtest.h>
 
 #include <list>
+#include <sstream>
 
 #include "testing.h"
 
 #include "pcomb/many.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 
-using pcomb::Char;
-using pcomb::Many;
-using pcomb::Some;
-using pcomb::Repeat;
+class ManyParserTest : public ::testing::Test { };
 
-class ManyParserTest : public ::testing::Test {
- protected:
-  static auto pManyA() {
-    return Many(Char('A'));
-  }
+TEST_F(ManyParserTest, Name1) {
+  auto parser = pcomb::Many(pcomb::Char('A'));
+  TestParserName(parser, "Many <Many [0..] [Predicate]>");
+}
 
-  static auto pSomeA() {
-    return Some(Char('A'));
-  }
+TEST_F(ManyParserTest, Name2) {
+  auto parser = pcomb::Some(pcomb::Char('A'));
+  TestParserName(parser, "Some <Many [1..] [Predicate]>");
+}
 
-  static auto pRepeatA(size_t n) {
-    return Repeat(Char('A'), n);
-  }
-
-  static auto expected(size_t n = 0) {
-    return std::list<char>(n, 'A');
-  }
-};
+TEST_F(ManyParserTest, Name3) {
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+  TestParserName(parser, "Repeat(3) <Many [3..3] [Predicate]>");
+}
 
 TEST_F(ManyParserTest, ManyEmpty) {
-  TestContainerParserSuccess("", pManyA(), expected(), 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::Many(pcomb::Char('A'));
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckEmpty());
 }
 
 TEST_F(ManyParserTest, ManyNoOne) {
-  TestContainerParserSuccess(
-      "BBB", pManyA(), expected(), 0, CheckNotEmpty('B'));
+  auto input = "BBB";
+  auto parser = pcomb::Many(pcomb::Char('A'));
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, ManySome) {
-  TestContainerParserSuccess(
-      "AAAB", pManyA(), expected(3), 3, CheckNotEmpty('B'));
+  auto input = "AAAB";
+  auto parser = pcomb::Many(pcomb::Char('A'));
+  auto expected = std::list<char>(3, 'A');
+  TestContainerParserSuccess(input, parser, expected, 3, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, ManyAll) {
-  TestContainerParserSuccess("AAAAA", pManyA(), expected(5), 5, CheckEmpty());
+  auto input = "AAAAA";
+  auto parser = pcomb::Many(pcomb::Char('A'));
+  auto expected = std::list<char>(5, 'A');
+  TestContainerParserSuccess(input, parser, expected, 5, CheckEmpty());
 }
 
 TEST_F(ManyParserTest, SomeEmpty) {
-  TestContainerParserFail("", pSomeA());
+  auto input = "";
+  auto parser = pcomb::Some(pcomb::Char('A'));
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(0, 1);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, SomeNoOne) {
-  TestContainerParserFail("BBB", pSomeA());
+  auto input = "BBB";
+  auto parser = pcomb::Some(pcomb::Char('A'));
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(0, 1);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, SomeOne) {
-  TestContainerParserSuccess(
-      "AB", pSomeA(), expected(1), 1, CheckNotEmpty('B'));
+  auto input = "AB";
+  auto parser = pcomb::Some(pcomb::Char('A'));
+  auto expected = std::list<char>(1, 'A');
+  TestContainerParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, SomeSome) {
-  TestContainerParserSuccess(
-      "AAAB", pSomeA(), expected(3), 3, CheckNotEmpty('B'));
+  auto input = "AAAB";
+  auto parser = pcomb::Some(pcomb::Char('A'));
+  auto expected = std::list<char>(3, 'A');
+  TestContainerParserSuccess(input, parser, expected, 3, CheckNotEmpty('B'));
 }
 
 TEST_F(ManyParserTest, SomeAll) {
-  TestContainerParserSuccess("AAAAA", pSomeA(), expected(5), 5, CheckEmpty());
+  auto input = "AAAAA";
+  auto parser = pcomb::Some(pcomb::Char('A'));
+  auto expected = std::list<char>(5, 'A');
+  TestContainerParserSuccess(input, parser, expected, 5, CheckEmpty());
 }
 
 TEST_F(ManyParserTest, RepeatEmpty) {
-  TestContainerParserFail("", pRepeatA(3));
+  auto input = "";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(0, 3);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, RepeatNoOne) {
-  TestContainerParserFail("B", pRepeatA(3));
+  auto input = "B";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(0, 3);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, RepeatNotEnough1) {
-  TestContainerParserFail("A", pRepeatA(3));
+  auto input = "AB";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(1, 3);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, RepeatNotEnough2) {
-  TestContainerParserFail("AAB", pRepeatA(3));
+  auto input = "AAB";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+
+  auto message = pcomb::messages::NOT_ENOUGH_RESULTS(2, 3);
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+
+  TestContainerParserFail(input, parser, trace);
 }
 
 TEST_F(ManyParserTest, RepeatEnough) {
-  TestContainerParserSuccess("AAA", pRepeatA(3), expected(3), 3, CheckEmpty());
+  auto input = "AAA";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+  auto expected = std::list<char>(3, 'A');
+  TestContainerParserSuccess(input, parser, expected, 3, CheckEmpty());
 }
 
 TEST_F(ManyParserTest, RepeatMore) {
-  TestContainerParserSuccess(
-      "AAAA", pRepeatA(3), expected(3), 3, CheckNotEmpty('A'));
+  auto input = "AAAAA";
+  auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
+  auto expected = std::list<char>(3, 'A');
+  TestContainerParserSuccess(input, parser, expected, 3, CheckNotEmpty('A'));
 }

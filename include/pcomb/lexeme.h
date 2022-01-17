@@ -42,7 +42,7 @@ inline auto Space() {
 template <typename P>
 inline auto Inside(char ob, ParserPointer<P>&& parser, char cb) {
   std::stringstream name;
-  name << "Inside(\"" << ob << "..." << cb << "\")";
+  name << "Inside('" << ob << "..." << cb << "')";
   return with_name(
       Seq(Skip(Char(ob)),
           std::forward<ParserPointer<P>>(parser),
@@ -62,7 +62,7 @@ inline auto String(const std::string& s) {
       };
 
   std::stringstream name;
-  name << "String(" << s << ")";
+  name << "String('" << s << "')";
   return with_name(Adapted(Chain(std::move(parsers)), std::move(adapter)),
                    name.str());
 }

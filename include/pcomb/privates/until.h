@@ -2,13 +2,14 @@
 #define PCOMB_PRIVATES_UNTIL_H_
 
 #include <list>
+#include <string>
 #include <utility>
 
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -26,10 +27,14 @@ class UntilParser : public UntilBaseType<P> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Until " + wrapped(parser_);
+  }
+
  public:
   explicit UntilParser(ParserPointer<P>&& parser)
       : parser_(std::forward<ParserPointer<P>>(parser)) {
-    this->name_ = UNTIL_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

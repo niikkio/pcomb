@@ -1,171 +1,289 @@
 #include <gtest/gtest.h>
 
+#include <list>
+#include <sstream>
+
 #include "testing.h"
 
+#include "pcomb/chain.h"
 #include "pcomb/lexeme.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
+#include "pcomb/skipped.h"
 
-using pcomb::Char;
-using pcomb::Digit;
-using pcomb::Inside;
-using pcomb::Line;
-using pcomb::NewLine;
-using pcomb::Space;
-using pcomb::String;
-using pcomb::Word;
+class LexemeParserTest : public ::testing::Test { };
 
-class LexemeParserTest : public ::testing::Test {
- protected:
-  static auto pDigit() {
-    return Digit();
-  }
+TEST_F(LexemeParserTest, Name1) {
+  auto parser = pcomb::Digit();
+  TestParserName(parser, "Digit <Predicate>");
+}
 
-  static auto pAinBrackets() {
-    return Inside('(', Char('A'), ')');
-  }
+TEST_F(LexemeParserTest, Name2) {
+  auto parser = pcomb::Inside('(', pcomb::Char('A'), ')');
+  auto expected_name = "Inside('(...)') <Sequence ["
+                       "Skipped [Predicate], Predicate, Skipped [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pSpace() {
-    return Space();
-  }
+TEST_F(LexemeParserTest, Name3) {
+  auto parser = pcomb::Space();
+  TestParserName(parser, "Space <Predicate>");
+}
 
-  static auto pLine() {
-    return Line();
-  }
+TEST_F(LexemeParserTest, Name4) {
+  auto parser = pcomb::Line();
+  TestParserName(parser, "Line <Until [Predicate]>");
+}
 
-  static auto pNewLine() {
-    return NewLine();
-  }
+TEST_F(LexemeParserTest, Name5) {
+  auto parser = pcomb::NewLine();
+  TestParserName(parser, "NewLine <Predicate>");
+}
 
-  static auto pEmptyString() {
-    return String("");
-  }
+TEST_F(LexemeParserTest, Name6) {
+  auto parser = pcomb::String("");
+  TestParserName(parser, "String('') <Adaptive [Dynamic Sequence []]>");
+}
 
-  static auto pStringABC() {
-    return String("ABC");
-  }
+TEST_F(LexemeParserTest, Name7) {
+  auto parser = pcomb::String("ABC");
+  auto expected_name = "String('ABC') <Adaptive ["
+                       "Dynamic Sequence [Predicate, Predicate, Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pWord() {
-    return Word();
-  }
-
-  using Expected = std::list<char>;
-};
+TEST_F(LexemeParserTest, Name8) {
+  auto parser = pcomb::Word();
+  TestParserName(parser, "Word <Until [Predicate]>");
+}
 
 TEST_F(LexemeParserTest, DigitFromEmpty) {
-  TestParserFail("", pDigit());
+  auto input = "";
+  auto parser = pcomb::Digit();
+  auto message = pcomb::messages::EMPTY_STREAM;
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, DigitMatch) {
-  TestParserSuccess("1B", pDigit(), '1', 1, CheckNotEmpty('B'));
+  auto input = "1B";
+  auto parser = pcomb::Digit();
+  TestParserSuccess(input, parser, '1', 1, CheckNotEmpty('B'));
 }
 
 TEST_F(LexemeParserTest, DigitNotMatch) {
-  TestParserFail("B1", pDigit());
+  auto input = "B1";
+  auto parser = pcomb::Digit();
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, InsideBracketsMatch) {
-  TestParserSuccess("(A)", pAinBrackets(), 'A', 3, CheckEmpty());
+  auto input = "(A)";
+  auto parser = pcomb::Inside('(', pcomb::Char('A'), ')');
+  TestParserSuccess(input, parser, 'A', 3, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, InsideBracketsNoOpen) {
-  TestParserFail("A)B", pAinBrackets());
+  using pcomb::Inside, pcomb::Char, pcomb::Skip;
+  auto input = "A)B";
+  auto parser = Inside('(', Char('A'), ')');
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  trace << "\t" << MakeTrace(Skip(Char('(')), {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('A');
+  trace << "\t\t" << MakeTrace(Char('('), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(LexemeParserTest, InsideBracketsNoClose) {
-  TestParserFail("(AB", pAinBrackets());
+  using pcomb::Inside, pcomb::Char, pcomb::Skip;
+  auto input = "(AB";
+  auto parser = Inside('(', Char('A'), ')');
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  trace << "\t" << MakeTrace(Skip(Char(')')), {2, 0, 2});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  trace << "\t\t" << MakeTrace(Char(')'), {2, 0, 2}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(LexemeParserTest, SpaceFromEmpty) {
-  TestParserFail("", pSpace());
+  auto input = "";
+  auto parser = pcomb::Space();
+  auto message = pcomb::messages::EMPTY_STREAM;
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, SpaceNotMatch) {
-  TestParserFail("A", pSpace());
+  auto input = "A";
+  auto parser = pcomb::Space();
+  auto message = pcomb::messages::UNEXPECTED_CHAR('A');
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, SpaceMatchSpace) {
-  TestParserSuccess(" A", pSpace(), ' ', 1, CheckNotEmpty('A'));
+  auto input = " A";
+  auto parser = pcomb::Space();
+  TestParserSuccess(input, parser, ' ', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, SpaceMatchTab) {
-  TestParserSuccess("\tA", pSpace(), '\t', 1, CheckNotEmpty('A'));
+  auto input = "\tA";
+  auto parser = pcomb::Space();
+  TestParserSuccess(input, parser, '\t', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, SpaceMatchNewLine) {
-  TestParserSuccess("\nA", pSpace(), '\n', 1, CheckNotEmpty('A'));
+  auto input = "\nA";
+  auto parser = pcomb::Space();
+  TestParserSuccess(input, parser, '\n', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, NewLineFromEmpty) {
-  TestParserFail("", pNewLine());
+  auto input = "";
+  auto parser = pcomb::NewLine();
+  auto message = pcomb::messages::EMPTY_STREAM;
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, NewLineNotMatch) {
-  TestParserFail("A", pNewLine());
+  auto input = "A";
+  auto parser = pcomb::NewLine();
+  auto message = pcomb::messages::UNEXPECTED_CHAR('A');
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, NewLineMatch) {
-  TestParserSuccess("\nA", pNewLine(), '\n', 1, CheckNotEmpty('A'));
-}
-
-TEST_F(LexemeParserTest, StringFromEmpty) {
-  TestParserFail("", pStringABC());
+  auto input = "\nA";
+  auto parser = pcomb::NewLine();
+  TestParserSuccess(input, parser, '\n', 1, CheckNotEmpty('A'));
 }
 
 TEST_F(LexemeParserTest, EmptyStringFromEmpty) {
-  TestParserSuccess("", pEmptyString(), "", 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::String("");
+  TestParserSuccess(input, parser, "", 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, EmptyString) {
-  TestParserSuccess("AB", pEmptyString(), "", 0, CheckNotEmpty('A'));
+  auto input = "AB";
+  auto parser = pcomb::String("");
+  TestParserSuccess(input, parser, "", 0, CheckNotEmpty('A'));
+}
+
+TEST_F(LexemeParserTest, StringFromEmpty) {
+  using pcomb::String, pcomb::Chain, pcomb::Char;
+  auto input = "";
+  auto parser = String("ABC");
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+
+  using pcomb::ParserPointer, pcomb::CharParserType;
+  using L = std::list<ParserPointer<CharParserType<char>>>;
+  trace << "\t" << MakeTrace(
+      Chain(L{Char('A'), Char('B'), Char('C')}), {0, 0, 0});
+
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << "\t\t" << MakeTrace(Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(LexemeParserTest, StringMatch) {
-  TestParserSuccess("ABC", pStringABC(), "ABC", 3, CheckEmpty());
+  auto input = "ABC";
+  auto parser = pcomb::String("ABC");
+  TestParserSuccess(input, parser, "ABC", 3, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, StringNotMatch) {
-  TestParserFail("ADC", pStringABC());
+  using pcomb::String, pcomb::Chain, pcomb::Char;
+  auto input = "ADC";
+  auto parser = String("ABC");
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+
+  using pcomb::ParserPointer, pcomb::CharParserType;
+  using L = std::list<ParserPointer<CharParserType<char>>>;
+  trace << "\t" << MakeTrace(
+      Chain(L{Char('A'), Char('B'), Char('C')}), {0, 0, 0});
+
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << "\t\t" << MakeTrace(Char('B'), {1, 0, 1}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(LexemeParserTest, LineFromEmpty) {
-  TestContainerParserSuccess("", pLine(), Expected{}, 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::Line();
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, LineFromOneLineWithNewLine) {
-  TestContainerParserSuccess("AB\n", pLine(),
-                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+  auto input = "AB\n";
+  auto parser = pcomb::Line();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, LineFromOneLineWithoutNewLine) {
-  TestContainerParserSuccess("AB", pLine(),
-                             Expected{'A', 'B'}, 2, CheckEmpty());
+  auto input = "AB";
+  auto parser = pcomb::Line();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, LineFromManyLines) {
-  TestContainerParserSuccess("AB\nCD", pLine(),
-                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+  auto input = "AB\nCD";
+  auto parser = pcomb::Line();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, WordFromEmpty) {
-  TestContainerParserSuccess("", pWord(), Expected{}, 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::Word();
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithoutSpace) {
-  TestContainerParserSuccess("AB", pWord(),
-                             Expected{'A', 'B'}, 2, CheckEmpty());
+  auto input = "AB";
+  auto parser = pcomb::Word();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckEmpty());
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithSpace) {
-  TestContainerParserSuccess("AB ", pWord(),
-                             Expected{'A', 'B'}, 2, CheckNotEmpty(' '));
+  auto input = "AB ";
+  auto parser = pcomb::Word();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty(' '));
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithNewLine) {
-  TestContainerParserSuccess("AB\n", pWord(),
-                             Expected{'A', 'B'}, 2, CheckNotEmpty('\n'));
+  auto input = "AB\n";
+  auto parser = pcomb::Word();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty('\n'));
 }
 
 TEST_F(LexemeParserTest, WordFromOneWordWithTab) {
-  TestContainerParserSuccess("AB\t", pWord(),
-                             Expected{'A', 'B'}, 2, CheckNotEmpty('\t'));
+  auto input = "AB\t";
+  auto parser = pcomb::Word();
+  auto expected = std::list<char>{'A', 'B'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty('\t'));
 }

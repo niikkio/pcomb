@@ -1,14 +1,16 @@
 #ifndef PCOMB_PRIVATES_EXACT_H_
 #define PCOMB_PRIVATES_EXACT_H_
 
+#include <string>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -22,10 +24,14 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Exact " + wrapped(parser_);
+  }
+
  public:
   explicit ExactParser(ParserPointer<P>&& p)
       : parser_(std::forward<ParserPointer<P>>(p)) {
-    this->name_ = EXACT_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -33,13 +39,15 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
 
     auto result = parser_->parse(stream_copy.get());
     if (!result.success()) {
-      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+      return ResultType(Trace(this, stream, messages::NO_MESSAGE,
                               {std::move(result).get_trace()}));
     }
 
     if (!stream_copy->empty()) {
       return ResultType(Trace(this, stream,
-                              EOF_WAS_EXPECTED_ERROR_MESSAGE(stream_copy)));
+                              messages::END_WAS_EXPECTED(
+                                  stream_copy->head(),
+                                  stream_copy->position())));
     }
 
     stream->consume(result.get_consumed_number());

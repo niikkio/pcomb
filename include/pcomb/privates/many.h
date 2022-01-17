@@ -2,14 +2,17 @@
 #define PCOMB_PRIVATES_MANY_H_
 
 #include <list>
+#include <sstream>
+#include <string>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -27,13 +30,23 @@ class ManyParser : public ManyBaseType<P> {
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    std::stringstream ss;
+    ss << "Many [" << min_count_ << "..";
+    if (!is_unlimited_) {
+      ss << max_count_;
+    }
+    ss << "] " << wrapped(parser_);
+    return ss.str();
+  }
+
  public:
   explicit ManyParser(ParserPointer<P>&& parser, size_t min_count = 0)
       : parser_(std::forward<ParserPointer<P>>(parser)),
         min_count_(min_count),
         max_count_(0),
         is_unlimited_(true) {
-    this->name_ = MANY_PARSER_NAME(parser_, min_count_);
   }
 
   ManyParser(ParserPointer<P>&& parser, size_t min_count, size_t max_count)
@@ -41,7 +54,6 @@ class ManyParser : public ManyBaseType<P> {
         min_count_(min_count),
         max_count_(max_count),
         is_unlimited_(false) {
-    this->name_ = MANY_PARSER_NAME(parser_, min_count_, max_count_);
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -66,8 +78,8 @@ class ManyParser : public ManyBaseType<P> {
     }
 
     return ResultType(Trace(this, stream,
-                            NOT_ENOUGH_RESULTS_ERROR_MESSAGE(values.size(),
-                                                             min_count_)));
+                            messages::NOT_ENOUGH_RESULTS(values.size(),
+                                                         min_count_)));
   }
 
  private:

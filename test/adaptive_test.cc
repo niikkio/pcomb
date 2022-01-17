@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <sstream>
+
 #include "testing.h"
 #include "transformers.h"
 
@@ -7,54 +9,80 @@
 #include "pcomb/alternative.h"
 #include "pcomb/lexeme.h"
 #include "pcomb/many.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 
-using pcomb::Adapted;
-using pcomb::Char;
-using pcomb::Digit;
-using pcomb::Many;
-using pcomb::StrictAny;
-using pcomb::StrictSeq;
+class AdaptiveParserTest : public ::testing::Test { };
 
-class AdaptiveParserTest : public ::testing::Test {
- protected:
-  static auto pManyAB() {
-    return Adapted(
-        Many(Adapted(StrictAny(Char('A'), Char('B')), &variant2char)),
-        &list2string);
-  }
+TEST_F(AdaptiveParserTest, Name1) {
+  using pcomb::Adapted, pcomb::Many, pcomb::StrictAny, pcomb::Char;
+  auto parser = Adapted(
+      Many(Adapted(StrictAny(Char('A'), Char('B')), &variant2char)),
+      &list2string);
+  auto expected_name = "Adapted <Adaptive [Many [0..] [Adaptive ["
+                       "Strict Alternative [Predicate, Predicate]]]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pDigit() {
-    return Adapted(Digit(), &char2int);
-  }
+TEST_F(AdaptiveParserTest, Name2) {
+  auto parser = pcomb::Adapted(pcomb::Digit(), &char2int);
+  auto expected_name = "Adapted <Adaptive [Predicate]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pTwoDigits() {
-    return Adapted(StrictSeq(Digit(), Digit()), &chars2int);
-  }
-};
+TEST_F(AdaptiveParserTest, Name3) {
+  using pcomb::Adapted, pcomb::StrictSeq, pcomb::Digit;
+  auto parser = Adapted(StrictSeq(Digit(), Digit()), &chars2int);
+  auto expected_name =
+      "Adapted <Adaptive [Strict Sequence [Predicate, Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(AdaptiveParserTest, HeadMatch) {
-  TestParserSuccess("8", pDigit(), 8, 1, CheckEmpty());
+  auto input = "8";
+  auto parser = pcomb::Adapted(pcomb::Digit(), &char2int);
+  TestParserSuccess(input, parser, 8, 1, CheckEmpty());
 }
 
 TEST_F(AdaptiveParserTest, HeadNotMatch) {
-  TestParserFail("A", pDigit());
+  auto input = "A";
+  auto parser = pcomb::Adapted(pcomb::Digit(), &char2int);
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('A');
+  trace << "\t" << MakeTrace(pcomb::Digit(), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(AdaptiveParserTest, AdaptedManyAlternative) {
-  TestParserSuccess("ABBAABABC", pManyAB(), "ABBAABAB", 8, CheckNotEmpty('C'));
+  using pcomb::Adapted, pcomb::Many, pcomb::StrictAny, pcomb::Char;
+  auto input = "ABBAABABC";
+  auto parser = Adapted(
+      Many(Adapted(StrictAny(Char('A'), Char('B')), &variant2char)),
+      &list2string);
+  TestParserSuccess(input, parser, "ABBAABAB", 8, CheckNotEmpty('C'));
 }
 
 TEST_F(AdaptiveParserTest, TwoDigitsToNumber1) {
-  TestParserSuccess("42", pTwoDigits(), 42, 2, CheckEmpty());
+  using pcomb::Adapted, pcomb::StrictSeq, pcomb::Digit;
+  auto input = "42";
+  auto parser = Adapted(StrictSeq(Digit(), Digit()), &chars2int);
+  TestParserSuccess(input, parser, 42, 2, CheckEmpty());
 }
 
 TEST_F(AdaptiveParserTest, TwoDigitsToNumber2) {
-  TestParserSuccess("131", pTwoDigits(), 13, 2, CheckNotEmpty('1'));
+  using pcomb::Adapted, pcomb::StrictSeq, pcomb::Digit;
+  auto input = "131";
+  auto parser = Adapted(StrictSeq(Digit(), Digit()), &chars2int);
+  TestParserSuccess(input, parser, 13, 2, CheckNotEmpty('1'));
 }
 
 TEST_F(AdaptiveParserTest, Memory) {
+  using pcomb::Adapted, pcomb::Digit;
+
   static int n = 0;
   static int n_copy = 0;
   static int n_move = 0;

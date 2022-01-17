@@ -27,9 +27,9 @@ TEST(TraceTest, Alternative) {
       Trace(pb, &s, "A != C")
     });
 
-  auto expected = pab->name() + " failed at [8,1,2]\n"
-                  "\t" + pa->name() + " failed at [8,1,2] [A != B]\n"
-                  "\t" + pb->name() + " failed at [8,1,2] [A != C]\n";
+  auto expected = pab->to_string() + " failed at [8,1,2]\n"
+                  "\t" + pa->to_string() + " failed at [8,1,2] [A != B]\n"
+                  "\t" + pb->to_string() + " failed at [8,1,2] [A != C]\n";
 
   EXPECT_EQ(trace.to_string(), expected);
 }

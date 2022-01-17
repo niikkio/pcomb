@@ -1,97 +1,131 @@
 #include <gtest/gtest.h>
 
 #include <list>
+#include <sstream>
 #include <variant>
 
 #include "testing.h"
 
 #include "pcomb/alternative.h"
 #include "pcomb/many.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 
-using pcomb::Char;
-using pcomb::Many;
-using pcomb::Some;
-using pcomb::StrictAny;
+class StrictAlternativeParserTest : public ::testing::Test { };
 
-class StrictAlternativeParserTest : public ::testing::Test {
- protected:
-  static auto pA() {
-    return StrictAny(Char('A'));
-  }
+TEST_F(StrictAlternativeParserTest, Name1) {
+  auto parser = pcomb::StrictAny(pcomb::Char('A'));
+  TestParserName(parser, "StrictAny <Strict Alternative [Predicate]>");
+}
 
-  static auto expectedA() {
-    return std::variant<char>{std::in_place_index<0>, 'A'};
-  }
+TEST_F(StrictAlternativeParserTest, Name2) {
+  using pcomb::StrictAny, pcomb::Char;
+  auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
+  auto expected_name =
+      "StrictAny <Strict Alternative [Predicate, Predicate, Predicate]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto pABC() {
-    return StrictAny(Char('A'), Char('B'), Char('C'));
-  }
+TEST_F(StrictAlternativeParserTest, Name3) {
+  using pcomb::StrictAny, pcomb::Char, pcomb::Some;
+  auto parser = StrictAny(Char('A'), Some(Char('B')));
+  auto expected_name =
+      "StrictAny <Strict Alternative [Predicate, Many [1..] [Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
-  static auto expectedABC_A() {
-    return std::variant<char, char, char>{std::in_place_index<0>, 'A'};
-  }
-
-  static auto expectedABC_B() {
-    return std::variant<char, char, char>{std::in_place_index<1>, 'B'};
-  }
-
-  static auto expectedABC_C() {
-    return std::variant<char, char, char>{std::in_place_index<2>, 'C'};
-  }
-
-  static auto pABs() {
-    return StrictAny(Char('A'), Some(Char('B')));
-  }
-
-  static auto expectedABs_A() {
-    return std::variant<char, std::list<char>>{std::in_place_index<0>, 'A'};
-  }
-
-  static auto expectedABs_Bs(size_t n) {
-    return std::variant<char, std::list<char>>{
-      std::in_place_index<1>, std::list<char>(n, 'B')};
-  }
-
-  static auto pManyAsBs() {
-    return Many(StrictAny(Some(Char('A')), Some(Char('B'))));
-  }
-};
+TEST_F(StrictAlternativeParserTest, Name4) {
+  using pcomb::Many, pcomb::StrictAny, pcomb::Some, pcomb::Char;
+  auto parser = Many(StrictAny(Some(Char('A')), Some(Char('B'))));
+  auto expected_name = "Many <Many [0..] [Strict Alternative ["
+                       "Many [1..] [Predicate], Many [1..] [Predicate]]]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(StrictAlternativeParserTest, SingleMatch) {
-  TestParserSuccess("A", pA(), expectedA(), 1, CheckEmpty());
+  auto input = "A";
+  auto parser = pcomb::StrictAny(pcomb::Char('A'));
+  auto expected = std::variant<char>{std::in_place_index<0>, 'A'};
+  TestParserSuccess(input, parser, expected, 1, CheckEmpty());
 }
 
 TEST_F(StrictAlternativeParserTest, SingleNotMatch) {
-  TestParserFail("B", pA());
+  auto input = "B";
+  auto parser = pcomb::StrictAny(pcomb::Char('A'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  trace << '\t' << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(StrictAlternativeParserTest, Take1) {
-  TestParserSuccess("ABC", pABC(), expectedABC_A(), 1, CheckNotEmpty('B'));
+  using pcomb::StrictAny, pcomb::Char;
+  auto input = "ABC";
+  auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
+  auto expected = std::variant<char, char, char>{std::in_place_index<0>, 'A'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(StrictAlternativeParserTest, Take2) {
-  TestParserSuccess("BCA", pABC(), expectedABC_B(), 1, CheckNotEmpty('C'));
+  using pcomb::StrictAny, pcomb::Char;
+  auto input = "BCA";
+  auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
+  auto expected = std::variant<char, char, char>{std::in_place_index<1>, 'B'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('C'));
 }
 
 TEST_F(StrictAlternativeParserTest, Take3) {
-  TestParserSuccess("CAB", pABC(), expectedABC_C(), 1, CheckNotEmpty('A'));
+  using pcomb::StrictAny, pcomb::Char;
+  auto input = "CAB";
+  auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
+  auto expected = std::variant<char, char, char>{std::in_place_index<2>, 'C'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('A'));
+}
+
+TEST_F(StrictAlternativeParserTest, NotMatch) {
+  using pcomb::StrictAny, pcomb::Char;
+  auto input = "D";
+  auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('D');
+  trace << '\t' << MakeTrace(pcomb::Char('A'), {0, 0, 0}, message);
+  trace << '\t' << MakeTrace(pcomb::Char('B'), {0, 0, 0}, message);
+  trace << '\t' << MakeTrace(pcomb::Char('C'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(StrictAlternativeParserTest, TakeOneOrMany1) {
-  TestParserSuccess("ABBB", pABs(), expectedABs_A(), 1, CheckNotEmpty('B'));
+  using pcomb::StrictAny, pcomb::Char, pcomb::Some;
+  auto input = "ABBB";
+  auto parser = StrictAny(Char('A'), Some(Char('B')));
+  auto expected = std::variant<char, std::list<char>>{
+      std::in_place_index<0>, 'A'};
+  TestParserSuccess(input, parser, expected, 1, CheckNotEmpty('B'));
 }
 
 TEST_F(StrictAlternativeParserTest, TakeOneOrMany2) {
-  TestParserSuccess("BBBA", pABs(), expectedABs_Bs(3), 3, CheckNotEmpty('A'));
+  using pcomb::StrictAny, pcomb::Char, pcomb::Some;
+  auto input = "BBBA";
+  auto parser = StrictAny(Char('A'), Some(Char('B')));
+  auto expected = std::variant<char, std::list<char>>{
+      std::in_place_index<1>, std::list<char>(3, 'B')};
+  TestParserSuccess(input, parser, expected, 3, CheckNotEmpty('A'));
 }
 
 TEST_F(StrictAlternativeParserTest, ManyAlternatives) {
+  using pcomb::Many, pcomb::StrictAny, pcomb::Some, pcomb::Char;
+  auto input = "BBAAABAABBB";
+  auto parser = Many(StrictAny(Some(Char('A')), Some(Char('B'))));
   using L = std::list<char>;
   using V = std::variant<L, L>;
-  using E = std::list<V>;
 
-  auto expected = E{
+  auto expected = std::list<V>{
     V{std::in_place_index<1>, L{'B', 'B'}},
     V{std::in_place_index<0>, L{'A', 'A', 'A'}},
     V{std::in_place_index<1>, L{'B'}},
@@ -99,6 +133,5 @@ TEST_F(StrictAlternativeParserTest, ManyAlternatives) {
     V{std::in_place_index<1>, L{'B', 'B', 'B'}}
   };
 
-  TestContainerParserSuccess(
-      "BBAAABAABBB", pManyAsBs(), expected, 11, CheckEmpty());
+  TestContainerParserSuccess(input, parser, expected, 11, CheckEmpty());
 }

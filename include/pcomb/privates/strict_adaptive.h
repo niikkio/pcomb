@@ -2,15 +2,17 @@
 #define PCOMB_PRIVATES_STRICT_ADAPTIVE_H_
 
 #include <functional>
+#include <string>
 #include <tuple>
 #include <utility>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
-#include "pcomb/privates/strings.h"
+#include "pcomb/privates/common.h"
 
 namespace pcomb::privates {
 
@@ -26,17 +28,21 @@ class StrictAdaptiveParser
   using ResultType = Result<ValueType>;
   using StreamType = IStream<CharType>;
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Strict Adaptive " + wrapped(parser_);
+  }
+
  public:
   explicit StrictAdaptiveParser(ParserPointer<P>&& p, F&& f)
       : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
-    this->name_ = STRICT_ADAPTIVE_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {
     auto result = parser_->parse(stream);
     if (!result.success()) {
-      return ResultType(Trace(this, stream, EMPTY_MESSAGE,
+      return ResultType(Trace(this, stream, messages::NO_MESSAGE,
                               {std::move(result).get_trace()}));
     }
 

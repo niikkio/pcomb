@@ -1,41 +1,61 @@
 #include <gtest/gtest.h>
 
-#include <tuple>
+#include <sstream>
+#include <utility>
 
 #include "testing.h"
 
 #include "pcomb/constructive.h"
-#include "pcomb/parser.h"
+#include "pcomb/messages.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 
-using pcomb::Char;
-using pcomb::Construct;
-using pcomb::Seq;
+class ConstructiveParserTest : public ::testing::Test { };
 
-class ConstructiveParserTest : public ::testing::Test {
- protected:
-  static auto pPairAB() {
-    return Construct<Pair>(Seq(Char('A'), Char('B')));
-  }
-
-  static auto expectedPairAB() {
-    return Pair{'A', 'B'};
-  }
-
- private:
-  using Pair = std::pair<char, char>;
-};
+TEST_F(ConstructiveParserTest, Name) {
+  using pcomb::Construct, pcomb::Seq, pcomb::Char;
+  using P = std::pair<char, char>;
+  auto parser = Construct<P>(Seq(Char('A'), Char('B')));
+  auto expected_name =
+      "Construct <Constructive [Sequence [Predicate, Predicate]]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(ConstructiveParserTest, Empty) {
-  TestParserFail("", pPairAB());
+  auto input = "";
+  using pcomb::Construct, pcomb::Seq, pcomb::Char;
+  using P = std::pair<char, char>;
+  auto parser = Construct<P>(Seq(Char('A'), Char('B')));
+
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  trace << "\t" << MakeTrace(Seq(Char('A'), Char('B')), {0, 0, 0});
+  auto message = pcomb::messages::EMPTY_STREAM;
+  trace << "\t\t" << MakeTrace(Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
 }
 
 TEST_F(ConstructiveParserTest, Match) {
-  TestParserSuccess("AB", pPairAB(), expectedPairAB(), 2, CheckEmpty());
+  auto input = "AB";
+  using pcomb::Construct, pcomb::Seq, pcomb::Char;
+  using P = std::pair<char, char>;
+  auto parser = Construct<P>(Seq(Char('A'), Char('B')));
+  auto expected = P{'A', 'B'};
+  TestParserSuccess(input, parser, expected, 2, CheckEmpty());
 }
 
 TEST_F(ConstructiveParserTest, NotMatch) {
-  TestParserFail("BA", pPairAB());
-}
+  auto input = "BA";
+  using pcomb::Construct, pcomb::Seq, pcomb::Char;
+  using P = std::pair<char, char>;
+  auto parser = Construct<P>(Seq(Char('A'), Char('B')));
 
+  std::stringstream trace;
+  trace << MakeTrace(parser, {0, 0, 0});
+  trace << "\t" << MakeTrace(Seq(Char('A'), Char('B')), {0, 0, 0});
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  trace << "\t\t" << MakeTrace(Char('A'), {0, 0, 0}, message);
+
+  TestParserFail(input, parser, trace.str());
+}

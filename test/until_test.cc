@@ -7,28 +7,31 @@
 #include "pcomb/predicate.h"
 #include "pcomb/until.h"
 
-using pcomb::Char;
-using pcomb::Until;
+class UntilParserTest : public ::testing::Test { };
 
-class UntilParserTest : public ::testing::Test {
- protected:
-  static auto pA() {
-    return Until(Char('A'));
-  }
-
-  using Expected = std::list<char>;
-};
+TEST_F(UntilParserTest, Name) {
+  auto parser = pcomb::Until(pcomb::Char('A'));
+  auto expected_name = "Until <Until [Predicate]>";
+  TestParserName(parser, expected_name);
+}
 
 TEST_F(UntilParserTest, Empty) {
-  TestContainerParserSuccess("", pA(), Expected{}, 0, CheckEmpty());
+  auto input = "";
+  auto parser = pcomb::Until(pcomb::Char('A'));
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckEmpty());
 }
 
 TEST_F(UntilParserTest, EmptyMatch) {
-  TestContainerParserSuccess(
-      "A", pA(), Expected{}, 0, CheckNotEmpty('A'));
+  auto input = "A";
+  auto parser = pcomb::Until(pcomb::Char('A'));
+  auto expected = std::list<char>{};
+  TestContainerParserSuccess(input, parser, expected, 0, CheckNotEmpty('A'));
 }
 
 TEST_F(UntilParserTest, Match) {
-  TestContainerParserSuccess(
-      "BCA", pA(), Expected{'B', 'C'}, 2, CheckNotEmpty('A'));
+  auto input = "BCA";
+  auto parser = pcomb::Until(pcomb::Char('A'));
+  auto expected = std::list<char>{'B', 'C'};
+  TestContainerParserSuccess(input, parser, expected, 2, CheckNotEmpty('A'));
 }

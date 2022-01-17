@@ -2,17 +2,19 @@
 #define PCOMB_PRIVATES_STRICT_ALTERNATIVE_H_
 
 #include <list>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <variant>
 
+#include "pcomb/messages.h"
 #include "pcomb/parser.h"
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
 
+#include "pcomb/privates/common.h"
 #include "pcomb/privates/magic.h"
-#include "pcomb/privates/strings.h"
 
 namespace pcomb::privates {
 
@@ -35,11 +37,15 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   using LogType = std::list<Trace>;
   static constexpr size_t StorageSize = 1 + sizeof...(PS);
 
+ protected:
+  std::string to_string_without_name() const override {
+    return "Strict Alternative " + wrapped(parsers_);
+  }
+
  public:
   explicit StrictAlternativeParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
-    this->name_ = STRICT_ALTERNATIVE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {
@@ -75,7 +81,8 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
                                     std::move(result).get_value()));
       }
       log->push_back(std::move(result).get_trace());
-      return ResultType(Trace(owner, stream, EMPTY_MESSAGE, std::move(*log)));
+      return ResultType(Trace(owner, stream,
+                              messages::NO_MESSAGE, std::move(*log)));
     }
   };
 

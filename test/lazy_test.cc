@@ -26,7 +26,7 @@ using pcomb::Skip;
 
 class LazyParserTest : public ::testing::Test {
  private:
-  class TreeParser : pcomb::Parser<char, std::shared_ptr<Tree>> {
+  class TreeParser : public pcomb::Parser<char, std::shared_ptr<Tree>> {
     // "(Tree)<v>(Tree)" OR "v"
    public:
     using CharType = char;

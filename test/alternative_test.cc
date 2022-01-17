@@ -25,8 +25,8 @@ class AlternativeParserTest : public ::testing::Test {
 
   static auto traceA(char ch) {
     std::stringstream ss;
-    ss << "pA failed at [0,0,0]\n"
-       << "\tChar(A) Parser failed at [0,0,0]"
+    ss << pA()->name() << " failed at [0,0,0]\n"
+       << "\t" << Char('A')->name() << " failed at [0,0,0]"
        << " [unexpected character: \'" << ch << "\']\n";
     return ss.str();
   }
@@ -37,12 +37,12 @@ class AlternativeParserTest : public ::testing::Test {
 
   static auto traceABC(char c) {
     std::stringstream ss;
-    ss << "pABC failed at [0,0,0]\n"
-       << "\tChar(A) Parser failed at [0,0,0] "
+    ss << pABC()->name() << " failed at [0,0,0]\n"
+       << "\t" << Char('A')->name() << " failed at [0,0,0] "
        << "[unexpected character: \'" << c << "\']\n"
-       << "\tChar(B) Parser failed at [0,0,0] "
+       << "\t" << Char('B')->name() << " failed at [0,0,0] "
        << "[unexpected character: \'" << c << "\']\n"
-       << "\tChar(C) Parser failed at [0,0,0] "
+       << "\t" << Char('C')->name() << " failed at [0,0,0] "
        << "[unexpected character: \'" << c << "\']\n";
     return ss.str();
   }

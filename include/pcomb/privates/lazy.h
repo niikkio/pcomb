@@ -5,6 +5,8 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 
+#include "pcomb/privates/strings.h"
+
 namespace pcomb::privates {
 
 template <typename P>
@@ -18,7 +20,9 @@ class LazyParser : public Parser<typename P::CharType, typename P::ValueType> {
   using StreamType = IStream<CharType>;
 
  public:
-  explicit LazyParser(const P* p) : parser_(p) { }
+  explicit LazyParser(const P* p) : parser_(p) {
+    this->name_ = LAZY_PARSER_NAME(p);
+  }
 
   ResultType parse(StreamType* stream) const override {
     return parser_->parse(stream);

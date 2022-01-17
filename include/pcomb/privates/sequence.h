@@ -37,7 +37,7 @@ class SequenceParser : public SequenceBaseType<P1, PS...> {
  public:
   explicit SequenceParser(ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
       : parsers_(std::forward_as_tuple(p1, ps...)) {
-    this->name_ = SEQUENCE_PARSER_NAME;
+    this->name_ = SEQUENCE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {

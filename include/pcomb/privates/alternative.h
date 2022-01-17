@@ -61,7 +61,7 @@ class AlternativeParser : public AlternativeBaseType<P1, PS...> {
  public:
   explicit AlternativeParser(ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
       : parsers_(std::forward_as_tuple(p1, ps...)) {
-    this->name_ = ALTERNATIVE_PARSER_NAME;
+    this->name_ = ALTERNATIVE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {

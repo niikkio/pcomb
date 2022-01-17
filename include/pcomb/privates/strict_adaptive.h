@@ -30,7 +30,7 @@ class StrictAdaptiveParser
   explicit StrictAdaptiveParser(ParserPointer<P>&& p, F&& f)
       : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
-    this->name_ = STRICT_ADAPTIVE_PARSER_NAME;
+    this->name_ = STRICT_ADAPTIVE_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

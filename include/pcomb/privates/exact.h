@@ -25,7 +25,7 @@ class ExactParser : public Parser<typename P::CharType, typename P::ValueType> {
  public:
   explicit ExactParser(ParserPointer<P>&& p)
       : parser_(std::forward<ParserPointer<P>>(p)) {
-    this->name_ = EXACT_PARSER_NAME;
+    this->name_ = EXACT_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

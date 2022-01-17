@@ -4,14 +4,17 @@
 #include <utility>
 
 #include "pcomb/parser.h"
+
 #include "pcomb/privates/constructive.h"
 
 namespace pcomb {
 
 template <typename T, typename P>
 inline auto Construct(ParserPointer<P>&& parser) {
-  return make<privates::ConstructiveParser<T, P>>(
-      std::forward<ParserPointer<P>>(parser));
+  return with_name(
+      make<privates::ConstructiveParser<T, P>>(
+          std::forward<ParserPointer<P>>(parser)),
+      "Construct");
 }
 
 }  // namespace pcomb

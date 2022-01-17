@@ -29,7 +29,7 @@ class UntilParser : public UntilBaseType<P> {
  public:
   explicit UntilParser(ParserPointer<P>&& parser)
       : parser_(std::forward<ParserPointer<P>>(parser)) {
-    this->name_ = UNTIL_PARSER_NAME;
+    this->name_ = UNTIL_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

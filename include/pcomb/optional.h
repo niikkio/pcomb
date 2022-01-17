@@ -6,14 +6,16 @@
 
 #include "pcomb/adaptive.h"
 #include "pcomb/parser.h"
+
 #include "pcomb/privates/optional.h"
 
 namespace pcomb {
 
 template <typename P>
 inline auto Opt(ParserPointer<P>&& parser) {
-  return make<privates::OptionalParser<P>>(
-      std::forward<ParserPointer<P>>(parser));
+  return with_name(
+      make<privates::OptionalParser<P>>(std::forward<ParserPointer<P>>(parser)),
+      "Opt");
 }
 
 template <typename P, typename T>
@@ -27,7 +29,9 @@ inline auto ParseWithDefault(ParserPointer<P>&& parser,
       [=](R&& opt) {
         return opt.value_or(default_value);
       };
-  return Adapted(std::move(maybe), std::move(adapter));
+
+  return with_name(Adapted(std::move(maybe), std::move(adapter)),
+                   "ParseWithDefault");
 }
 
 }  // namespace pcomb

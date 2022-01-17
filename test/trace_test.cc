@@ -27,9 +27,9 @@ TEST(TraceTest, Alternative) {
       Trace(pb, &s, "A != C")
     });
 
-  auto expected = "Alternative Parser failed at [8,1,2]\n"
-                  "\tChar(A) Parser failed at [8,1,2] [A != B]\n"
-                  "\tChar(B) Parser failed at [8,1,2] [A != C]\n";
+  auto expected = pab->name() + " failed at [8,1,2]\n"
+                  "\t" + pa->name() + " failed at [8,1,2] [A != B]\n"
+                  "\t" + pb->name() + " failed at [8,1,2] [A != C]\n";
 
   EXPECT_EQ(trace.to_string(), expected);
 }

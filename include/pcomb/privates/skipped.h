@@ -26,7 +26,7 @@ class SkippedParser : public Parser<typename P::CharType, SkippedValue> {
  public:
   explicit SkippedParser(ParserPointer<P>&& parser)
       : parser_(std::forward<ParserPointer<P>>(parser)) {
-    this->name_ = SKIPPED_PARSER_NAME;
+    this->name_ = SKIPPED_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

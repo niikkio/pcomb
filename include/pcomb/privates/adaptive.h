@@ -49,7 +49,6 @@ class AdaptedValue {
   }
 };
 
-
 template <typename P, typename F>
 class AdaptiveParser
     : public Parser<typename P::CharType, typename AdaptedValue<P, F>::Type> {
@@ -65,7 +64,7 @@ class AdaptiveParser
   explicit AdaptiveParser(ParserPointer<P>&& p, F&& f)
       : parser_(std::forward<ParserPointer<P>>(p))
       , func_(std::forward<F>(f)) {
-    this->name_ = ADAPTIVE_PARSER_NAME;
+    this->name_ = ADAPTIVE_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

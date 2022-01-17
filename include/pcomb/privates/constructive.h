@@ -68,7 +68,7 @@ class ConstructiveParser : public Parser<typename P::CharType, T> {
  public:
   explicit ConstructiveParser(ParserPointer<P>&& p)
       : parser_(std::forward<ParserPointer<P>>(p)) {
-    this->name_ = CONSTRUCTIVE_PARSER_NAME;
+    this->name_ = CONSTRUCTIVE_PARSER_NAME(parser_);
   }
 
   ResultType parse(StreamType* stream) const override {

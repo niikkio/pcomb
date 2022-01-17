@@ -33,7 +33,7 @@ class ManyParser : public ManyBaseType<P> {
         min_count_(min_count),
         max_count_(0),
         is_unlimited_(true) {
-    this->name_ = MANY_PARSER_NAME;
+    this->name_ = MANY_PARSER_NAME(parser_, min_count_);
   }
 
   ManyParser(ParserPointer<P>&& parser, size_t min_count, size_t max_count)
@@ -41,7 +41,7 @@ class ManyParser : public ManyBaseType<P> {
         min_count_(min_count),
         max_count_(max_count),
         is_unlimited_(false) {
-    this->name_ = MANY_PARSER_NAME;
+    this->name_ = MANY_PARSER_NAME(parser_, min_count_, max_count_);
   }
 
   ResultType parse(StreamType* stream) const override {

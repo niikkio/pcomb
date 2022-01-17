@@ -22,24 +22,32 @@
 namespace pcomb {
 
 inline auto Digit() {
-  return make<privates::PredicateParser<char>>(
-      [](char c) { return '0' <= c && c <= '9'; });
+  return with_name(
+      make<privates::PredicateParser<char>>(
+          [](char c) { return '0' <= c && c <= '9'; }),
+      "Digit");
 }
 
 inline auto NewLine() {
-  return Char('\n');
+  return with_name(Char('\n'), "NewLine");
 }
 
 inline auto Space() {
-  return make<privates::PredicateParser<char>>(
-      [](unsigned char c) { return std::isspace(c); });
+  return with_name(
+      make<privates::PredicateParser<char>>(
+          [](unsigned char c) { return std::isspace(c); }),
+      "Space");
 }
 
 template <typename P>
 inline auto Inside(char ob, ParserPointer<P>&& parser, char cb) {
-  return Seq(Skip(Char(ob)),
-             std::forward<ParserPointer<P>>(parser),
-             Skip(Char(cb)));
+  std::stringstream name;
+  name << "Inside(\"" << ob << "..." << cb << "\")";
+  return with_name(
+      Seq(Skip(Char(ob)),
+          std::forward<ParserPointer<P>>(parser),
+          Skip(Char(cb))),
+      name.str());
 }
 
 inline auto String(const std::string& s) {
@@ -53,15 +61,18 @@ inline auto String(const std::string& s) {
         return std::string(chars.cbegin(), chars.cend());
       };
 
-  return Adapted(Chain(std::move(parsers)), std::move(adapter));
+  std::stringstream name;
+  name << "String(" << s << ")";
+  return with_name(Adapted(Chain(std::move(parsers)), std::move(adapter)),
+                   name.str());
 }
 
 inline auto Line() {
-  return Until(NewLine());
+  return with_name(Until(NewLine()), "Line");
 }
 
 inline auto Word() {
-  return Until(Space());
+  return with_name(Until(Space()), "Word");
 }
 
 }  // namespace pcomb

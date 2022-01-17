@@ -2,6 +2,7 @@
 #define PCOMB_PARSER_H_
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -12,6 +13,11 @@ namespace pcomb {
 
 template <typename P>
 using ParserPointer = std::shared_ptr<P>;
+
+template <typename P, typename... Args>
+inline ParserPointer<P> make(Args&&... args) {
+  return std::make_shared<P>(std::forward<Args>(args)...);
+}
 
 template <typename C, typename V>
 class Parser {
@@ -27,20 +33,17 @@ class Parser {
     return name_;
   }
 
-  friend ParserPointer<Parser>&& with_name(
-      ParserPointer<Parser>&& p, const std::string& name) {
-    p->name_ = name;
+  friend ParserPointer<Parser>&& with_name(ParserPointer<Parser>&& p,
+                                           const std::string& name) {
+    std::stringstream ss;
+    ss << name << " <" << p->name() << ">";
+    p->name_ = ss.str();
     return std::forward<ParserPointer<Parser>>(p);
   }
 
  protected:
   std::string name_ = "Parser";
 };
-
-template <typename P, typename... Args>
-inline std::shared_ptr<P> make(Args&&... args) {
-  return std::make_shared<P>(std::forward<Args>(args)...);
-}
 
 }  // namespace pcomb
 #endif  // PCOMB_PARSER_H_

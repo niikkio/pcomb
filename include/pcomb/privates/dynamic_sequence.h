@@ -33,7 +33,7 @@ class DynamicSequenceParser : public Parser<
 
   explicit DynamicSequenceParser(StorageType&& ps)
       : parsers_(std::forward<StorageType>(ps)) {
-    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME;
+    this->name_ = DYNAMIC_SEQUENCE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {

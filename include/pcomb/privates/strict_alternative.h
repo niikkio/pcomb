@@ -39,7 +39,7 @@ class StrictAlternativeParser : public StrictAlternativeBaseType<P1, PS...> {
   explicit StrictAlternativeParser(
       ParserPointer<P1>&& p1, ParserPointer<PS>&&... ps)
           : parsers_(std::forward_as_tuple(p1, ps...)) {
-    this->name_ = STRICT_ALTERNATIVE_PARSER_NAME;
+    this->name_ = STRICT_ALTERNATIVE_PARSER_NAME(parsers_);
   }
 
   ResultType parse(StreamType* stream) const override {

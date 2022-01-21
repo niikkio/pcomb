@@ -13,7 +13,7 @@ jobs:
             - run:
                 name: Build
                 command: |
-                    cmake -S . -B build && cmake --build build
+                    cmake -S . -B build -D pcomb_build_tests=ON && cmake --build build
             - run:
                 name: Run
                 command: |

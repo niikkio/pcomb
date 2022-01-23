@@ -16,20 +16,20 @@ class AlternativeParserTest : public ::testing::Test { };
 
 TEST_F(AlternativeParserTest, Name1) {
   auto parser = pcomb::Any(pcomb::Char('A'));
-  TestParserName(parser, "Any <Alternative [Predicate]>");
+  TestParserName(parser, "Any <Alternative [Char('A')]>");
 }
 
 TEST_F(AlternativeParserTest, Name2) {
   using pcomb::Any, pcomb::Char;
   auto parser = Any(Char('A'), Char('B'), Char('C'));
-  auto expected_name = "Any <Alternative [Predicate, Predicate, Predicate]>";
+  auto expected_name = "Any <Alternative [Char('A'), Char('B'), Char('C')]>";
   TestParserName(parser, expected_name);
 }
 
 TEST_F(AlternativeParserTest, Name3) {
   using pcomb::Any, pcomb::Char, pcomb::Some;
   auto parser = Any(Char('A'), Some(Char('B')));
-  auto expected_name = "Any <Alternative [Predicate, Many [1..] [Predicate]]>";
+  auto expected_name = "Any <Alternative [Char('A'), Many [1..] [Char('B')]]>";
   TestParserName(parser, expected_name);
 }
 
@@ -37,15 +37,15 @@ TEST_F(AlternativeParserTest, Name4) {
   using pcomb::Many, pcomb::Any, pcomb::Some, pcomb::Char;
   auto parser = Many(Any(Some(Char('A')), Some(Char('B'))));
   auto expected_name = "Many <Many [0..] [Alternative ["
-                       "Many [1..] [Predicate], Many [1..] [Predicate]]]>";
+                       "Many [1..] [Char('A')], Many [1..] [Char('B')]]]>";
   TestParserName(parser, expected_name);
 }
 
 TEST_F(AlternativeParserTest, Name5) {
   using pcomb::Any, pcomb::Skip, pcomb::Some, pcomb::Char;
   auto parser = Any(Skip(Some(Char('A'))), Skip(Some(Char('B'))));
-  auto expected_name = "Any <Alternative [Skipped [Many [1..] [Predicate]], "
-                                         "Skipped [Many [1..] [Predicate]]]>";
+  auto expected_name = "Any <Alternative [Skipped [Many [1..] [Char('A')]], "
+                                         "Skipped [Many [1..] [Char('B')]]]>";
   TestParserName(parser, expected_name);
 }
 

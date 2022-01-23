@@ -17,7 +17,7 @@ TEST_F(StrictAdaptiveParserTest, Name) {
   using pcomb::StrictAdapted, pcomb::Seq, pcomb::Char;
   auto parser = StrictAdapted(Seq(Char('A'), Char('B')), &tuple2pair);
   auto expected_name =
-      "StrictAdapted <Strict Adaptive [Sequence [Predicate, Predicate]]>";
+      "StrictAdapted <Strict Adaptive [Sequence [Char('A'), Char('B')]]>";
   TestParserName(parser, expected_name);
 }
 

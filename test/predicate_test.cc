@@ -9,7 +9,7 @@ class PredicateParserTest : public ::testing::Test { };
 
 TEST_F(PredicateParserTest, Name1) {
   auto parser = pcomb::Char('A');
-  TestParserName(parser, "Char('A') <Predicate>");
+  TestParserName(parser, "Char('A') <Char('A')>");
 }
 
 TEST_F(PredicateParserTest, Name2) {

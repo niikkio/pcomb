@@ -13,17 +13,17 @@ class ManyParserTest : public ::testing::Test { };
 
 TEST_F(ManyParserTest, Name1) {
   auto parser = pcomb::Many(pcomb::Char('A'));
-  TestParserName(parser, "Many <Many [0..] [Predicate]>");
+  TestParserName(parser, "Many <Many [0..] [Char('A')]>");
 }
 
 TEST_F(ManyParserTest, Name2) {
   auto parser = pcomb::Some(pcomb::Char('A'));
-  TestParserName(parser, "Some <Many [1..] [Predicate]>");
+  TestParserName(parser, "Some <Many [1..] [Char('A')]>");
 }
 
 TEST_F(ManyParserTest, Name3) {
   auto parser = pcomb::Repeat(pcomb::Char('A'), 3);
-  TestParserName(parser, "Repeat(3) <Many [3..3] [Predicate]>");
+  TestParserName(parser, "Repeat(3) <Many [3..3] [Char('A')]>");
 }
 
 TEST_F(ManyParserTest, ManyEmpty) {

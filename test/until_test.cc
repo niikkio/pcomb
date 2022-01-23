@@ -11,7 +11,7 @@ class UntilParserTest : public ::testing::Test { };
 
 TEST_F(UntilParserTest, Name) {
   auto parser = pcomb::Until(pcomb::Char('A'));
-  auto expected_name = "Until <Until [Predicate]>";
+  auto expected_name = "Until <Until [Char('A')]>";
   TestParserName(parser, expected_name);
 }
 

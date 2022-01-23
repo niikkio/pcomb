@@ -21,7 +21,7 @@ TEST_F(AdaptiveParserTest, Name1) {
       Many(Adapted(StrictAny(Char('A'), Char('B')), &variant2char)),
       &list2string);
   auto expected_name = "Adapted <Adaptive [Many [0..] [Adaptive ["
-                       "Strict Alternative [Predicate, Predicate]]]]>";
+                       "Strict Alternative [Char('A'), Char('B')]]]]>";
   TestParserName(parser, expected_name);
 }
 

@@ -24,7 +24,7 @@ TEST_F(ChainParserTest, Name2) {
   using pcomb::Char, pcomb::Chain;
   auto parser = Chain(Parsers{Char('A'), Char('B'), Char('C')});
   auto expected_name =
-      "Chain <Dynamic Sequence [Predicate, Predicate, Predicate]>";
+      "Chain <Dynamic Sequence [Char('A'), Char('B'), Char('C')]>";
   TestParserName(parser, expected_name);
 }
 

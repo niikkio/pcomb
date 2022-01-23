@@ -14,13 +14,13 @@ class SequenceParserTest : public ::testing::Test { };
 
 TEST_F(SequenceParserTest, Name1) {
   auto parser = pcomb::Seq(pcomb::Char('A'));
-  TestParserName(parser, "Seq <Sequence [Predicate]>");
+  TestParserName(parser, "Seq <Sequence [Char('A')]>");
 }
 
 TEST_F(SequenceParserTest, Name2) {
   using pcomb::Seq, pcomb::Char;
   auto parser = Seq(Char('A'), Char('B'), Char('C'));
-  auto expected_name = "Seq <Sequence [Predicate, Predicate, Predicate]>";
+  auto expected_name = "Seq <Sequence [Char('A'), Char('B'), Char('C')]>";
   TestParserName(parser, expected_name);
 }
 
@@ -28,7 +28,7 @@ TEST_F(SequenceParserTest, Name3) {
   using pcomb::Seq, pcomb::Skip, pcomb::Char;
   auto parser = Seq(Skip(Char('A')), Skip(Char('B')));
   auto expected_name =
-      "Seq <Sequence [Skipped [Predicate], Skipped [Predicate]]>";
+      "Seq <Sequence [Skipped [Char('A')], Skipped [Char('B')]]>";
   TestParserName(parser, expected_name);
 }
 
@@ -36,8 +36,8 @@ TEST_F(SequenceParserTest, Name4) {
   using pcomb::Seq, pcomb::Skip, pcomb::Char;
   auto parser =
       Seq(Skip(Char('(')), Char('A'), Char('B'), Char('C'), Skip(Char(')')));
-  auto expected_name = "Seq <Sequence [Skipped [Predicate], Predicate, "
-                       "Predicate, Predicate, Skipped [Predicate]]>";
+  auto expected_name = "Seq <Sequence [Skipped [Char('(')], Char('A'), "
+                       "Char('B'), Char('C'), Skipped [Char(')')]]>";
   TestParserName(parser, expected_name);
 }
 

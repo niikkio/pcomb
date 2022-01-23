@@ -14,7 +14,7 @@ class StrictSequenceParserTest : public ::testing::Test { };
 
 TEST_F(StrictSequenceParserTest, Name1) {
   auto parser = pcomb::StrictSeq(pcomb::Char('A'));
-  auto expected_name = "StrictSeq <Strict Sequence [Predicate]>";
+  auto expected_name = "StrictSeq <Strict Sequence [Char('A')]>";
   TestParserName(parser, expected_name);
 }
 
@@ -22,7 +22,7 @@ TEST_F(StrictSequenceParserTest, Name2) {
   using pcomb::StrictSeq, pcomb::Char;
   auto parser = StrictSeq(Char('A'), Char('B'), Char('C'));
   auto expected_name =
-      "StrictSeq <Strict Sequence [Predicate, Predicate, Predicate]>";
+      "StrictSeq <Strict Sequence [Char('A'), Char('B'), Char('C')]>";
   TestParserName(parser, expected_name);
 }
 

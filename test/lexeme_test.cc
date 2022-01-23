@@ -21,7 +21,7 @@ TEST_F(LexemeParserTest, Name1) {
 TEST_F(LexemeParserTest, Name2) {
   auto parser = pcomb::Inside('(', pcomb::Char('A'), ')');
   auto expected_name = "Inside('(...)') <Sequence ["
-                       "Skipped [Predicate], Predicate, Skipped [Predicate]]>";
+                       "Skipped [Char('(')], Char('A'), Skipped [Char(')')]]>";
   TestParserName(parser, expected_name);
 }
 
@@ -32,12 +32,12 @@ TEST_F(LexemeParserTest, Name3) {
 
 TEST_F(LexemeParserTest, Name4) {
   auto parser = pcomb::Line();
-  TestParserName(parser, "Line <Until [Predicate]>");
+  TestParserName(parser, "Line <Until [Char('\n')]>");
 }
 
 TEST_F(LexemeParserTest, Name5) {
   auto parser = pcomb::NewLine();
-  TestParserName(parser, "NewLine <Predicate>");
+  TestParserName(parser, "NewLine <Char('\n')>");
 }
 
 TEST_F(LexemeParserTest, Name6) {
@@ -48,7 +48,7 @@ TEST_F(LexemeParserTest, Name6) {
 TEST_F(LexemeParserTest, Name7) {
   auto parser = pcomb::String("ABC");
   auto expected_name = "String('ABC') <Adaptive ["
-                       "Dynamic Sequence [Predicate, Predicate, Predicate]]>";
+                       "Dynamic Sequence [Char('A'), Char('B'), Char('C')]]>";
   TestParserName(parser, expected_name);
 }
 

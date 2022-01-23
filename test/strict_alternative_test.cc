@@ -15,14 +15,14 @@ class StrictAlternativeParserTest : public ::testing::Test { };
 
 TEST_F(StrictAlternativeParserTest, Name1) {
   auto parser = pcomb::StrictAny(pcomb::Char('A'));
-  TestParserName(parser, "StrictAny <Strict Alternative [Predicate]>");
+  TestParserName(parser, "StrictAny <Strict Alternative [Char('A')]>");
 }
 
 TEST_F(StrictAlternativeParserTest, Name2) {
   using pcomb::StrictAny, pcomb::Char;
   auto parser = StrictAny(Char('A'), Char('B'), Char('C'));
   auto expected_name =
-      "StrictAny <Strict Alternative [Predicate, Predicate, Predicate]>";
+      "StrictAny <Strict Alternative [Char('A'), Char('B'), Char('C')]>";
   TestParserName(parser, expected_name);
 }
 
@@ -30,7 +30,7 @@ TEST_F(StrictAlternativeParserTest, Name3) {
   using pcomb::StrictAny, pcomb::Char, pcomb::Some;
   auto parser = StrictAny(Char('A'), Some(Char('B')));
   auto expected_name =
-      "StrictAny <Strict Alternative [Predicate, Many [1..] [Predicate]]>";
+      "StrictAny <Strict Alternative [Char('A'), Many [1..] [Char('B')]]>";
   TestParserName(parser, expected_name);
 }
 
@@ -38,7 +38,7 @@ TEST_F(StrictAlternativeParserTest, Name4) {
   using pcomb::Many, pcomb::StrictAny, pcomb::Some, pcomb::Char;
   auto parser = Many(StrictAny(Some(Char('A')), Some(Char('B'))));
   auto expected_name = "Many <Many [0..] [Strict Alternative ["
-                       "Many [1..] [Predicate], Many [1..] [Predicate]]]>";
+                       "Many [1..] [Char('A')], Many [1..] [Char('B')]]]>";
   TestParserName(parser, expected_name);
 }
 

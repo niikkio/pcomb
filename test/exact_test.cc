@@ -12,7 +12,7 @@ class ExactParserTest : public ::testing::Test { };
 
 TEST_F(ExactParserTest, Name) {
   auto parser = pcomb::Exact(pcomb::Char('A'));
-  TestParserName(parser, "Exact <Exact [Predicate]>");
+  TestParserName(parser, "Exact <Exact [Char('A')]>");
 }
 
 TEST_F(ExactParserTest, Empty) {

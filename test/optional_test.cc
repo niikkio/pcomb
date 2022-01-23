@@ -11,12 +11,12 @@ class OptionalParserTest : public ::testing::Test { };
 
 TEST_F(OptionalParserTest, Name1) {
   auto parser = pcomb::Opt(pcomb::Char('A'));
-  TestParserName(parser, "Opt <Optional [Predicate]>");
+  TestParserName(parser, "Opt <Optional [Char('A')]>");
 }
 
 TEST_F(OptionalParserTest, Name2) {
   auto parser = pcomb::WithDefault(pcomb::Char('A'), 'B');
-  auto expected_name = "WithDefault('B') <Adaptive [Optional [Predicate]]>";
+  auto expected_name = "WithDefault('B') <Adaptive [Optional [Char('A')]]>";
   TestParserName(parser, expected_name);
 }
 

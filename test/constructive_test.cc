@@ -17,7 +17,7 @@ TEST_F(ConstructiveParserTest, Name) {
   using P = std::pair<char, char>;
   auto parser = Construct<P>(Seq(Char('A'), Char('B')));
   auto expected_name =
-      "Construct <Constructive [Sequence [Predicate, Predicate]]>";
+      "Construct <Constructive [Sequence [Char('A'), Char('B')]]>";
   TestParserName(parser, expected_name);
 }
 

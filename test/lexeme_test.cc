@@ -14,69 +14,42 @@
 class LexemeParserTest : public ::testing::Test { };
 
 TEST_F(LexemeParserTest, Name1) {
-  auto parser = pcomb::Digit();
-  TestParserName(parser, "Digit <Predicate>");
-}
-
-TEST_F(LexemeParserTest, Name2) {
   auto parser = pcomb::Inside('(', pcomb::Char('A'), ')');
   auto expected_name = "Inside('(...)') <Sequence ["
                        "Skipped [Char('(')], Char('A'), Skipped [Char(')')]]>";
   TestParserName(parser, expected_name);
 }
 
-TEST_F(LexemeParserTest, Name3) {
+TEST_F(LexemeParserTest, Name2) {
   auto parser = pcomb::Space();
   TestParserName(parser, "Space <Predicate>");
 }
 
-TEST_F(LexemeParserTest, Name4) {
+TEST_F(LexemeParserTest, Name3) {
   auto parser = pcomb::Line();
   TestParserName(parser, "Line <Until [Char('\n')]>");
 }
 
-TEST_F(LexemeParserTest, Name5) {
+TEST_F(LexemeParserTest, Name4) {
   auto parser = pcomb::NewLine();
   TestParserName(parser, "NewLine <Char('\n')>");
 }
 
-TEST_F(LexemeParserTest, Name6) {
+TEST_F(LexemeParserTest, Name5) {
   auto parser = pcomb::String("");
   TestParserName(parser, "String('') <Adaptive [Dynamic Sequence []]>");
 }
 
-TEST_F(LexemeParserTest, Name7) {
+TEST_F(LexemeParserTest, Name6) {
   auto parser = pcomb::String("ABC");
   auto expected_name = "String('ABC') <Adaptive ["
                        "Dynamic Sequence [Char('A'), Char('B'), Char('C')]]>";
   TestParserName(parser, expected_name);
 }
 
-TEST_F(LexemeParserTest, Name8) {
+TEST_F(LexemeParserTest, Name7) {
   auto parser = pcomb::Word();
   TestParserName(parser, "Word <Until [Predicate]>");
-}
-
-TEST_F(LexemeParserTest, DigitFromEmpty) {
-  auto input = "";
-  auto parser = pcomb::Digit();
-  auto message = pcomb::messages::EMPTY_STREAM;
-  auto trace = MakeTrace(parser, {0, 0, 0}, message);
-  TestParserFail(input, parser, trace);
-}
-
-TEST_F(LexemeParserTest, DigitMatch) {
-  auto input = "1B";
-  auto parser = pcomb::Digit();
-  TestParserSuccess(input, parser, '1', 1, CheckNotEmpty('B'));
-}
-
-TEST_F(LexemeParserTest, DigitNotMatch) {
-  auto input = "B1";
-  auto parser = pcomb::Digit();
-  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
-  auto trace = MakeTrace(parser, {0, 0, 0}, message);
-  TestParserFail(input, parser, trace);
 }
 
 TEST_F(LexemeParserTest, InsideBracketsMatch) {

@@ -27,7 +27,7 @@ TEST_F(AdaptiveParserTest, Name1) {
 
 TEST_F(AdaptiveParserTest, Name2) {
   auto parser = pcomb::Adapted(pcomb::Digit(), &char2int);
-  auto expected_name = "Adapted <Adaptive [Predicate]>";
+  auto expected_name = "Adapted <Adaptive [Digit]>";
   TestParserName(parser, expected_name);
 }
 
@@ -35,7 +35,7 @@ TEST_F(AdaptiveParserTest, Name3) {
   using pcomb::Adapted, pcomb::StrictSeq, pcomb::Digit;
   auto parser = Adapted(StrictSeq(Digit(), Digit()), &chars2int);
   auto expected_name =
-      "Adapted <Adaptive [Strict Sequence [Predicate, Predicate]]>";
+      "Adapted <Adaptive [Strict Sequence [Digit, Digit]]>";
   TestParserName(parser, expected_name);
 }
 

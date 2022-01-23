@@ -21,13 +21,6 @@
 
 namespace pcomb {
 
-inline auto Digit() {
-  return with_name(
-      make<privates::PredicateParser<char>>(
-          [](char c) { return '0' <= c && c <= '9'; }),
-      "Digit");
-}
-
 inline auto NewLine() {
   return with_name(Char('\n'), "NewLine");
 }

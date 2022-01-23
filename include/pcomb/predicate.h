@@ -7,6 +7,7 @@
 #include "pcomb/parser.h"
 
 #include "pcomb/privates/char.h"
+#include "pcomb/privates/digit.h"
 #include "pcomb/privates/predicate.h"
 
 namespace pcomb {
@@ -31,6 +32,10 @@ inline auto LatinChar() {
             return ('a' <= c && c <= 'z') ||
                    ('A' <= c && c <= 'Z'); }),
       "LatinChar");
+}
+
+inline auto Digit() {
+  return with_name(make<privates::DigitParser<char>>(), "Digit");
 }
 
 template <typename Ch>

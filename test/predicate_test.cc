@@ -22,6 +22,11 @@ TEST_F(PredicateParserTest, Name3) {
   TestParserName(parser, "LatinChar <Predicate>");
 }
 
+TEST_F(PredicateParserTest, Name4) {
+  auto parser = pcomb::Digit();
+  TestParserName(parser, "Digit <Digit>");
+}
+
 TEST_F(PredicateParserTest, Empty) {
   auto input = "";
   auto parser = pcomb::Char('A');
@@ -99,4 +104,26 @@ TEST_F(PredicateParserTest, LatinHeadNotMatch) {
   trace << MakeTrace(parser, {0, 0, 0}, message);
 
   TestParserFail(input, parser, trace.str());
+}
+
+TEST_F(PredicateParserTest, DigitFromEmpty) {
+  auto input = "";
+  auto parser = pcomb::Digit();
+  auto message = pcomb::messages::EMPTY_STREAM;
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
+}
+
+TEST_F(PredicateParserTest, DigitMatch) {
+  auto input = "1B";
+  auto parser = pcomb::Digit();
+  TestParserSuccess(input, parser, '1', 1, CheckNotEmpty('B'));
+}
+
+TEST_F(PredicateParserTest, DigitNotMatch) {
+  auto input = "B1";
+  auto parser = pcomb::Digit();
+  auto message = pcomb::messages::UNEXPECTED_CHAR('B');
+  auto trace = MakeTrace(parser, {0, 0, 0}, message);
+  TestParserFail(input, parser, trace);
 }

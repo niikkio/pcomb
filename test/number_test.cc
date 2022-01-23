@@ -28,3 +28,18 @@ TEST_F(NumberParserTest, SimpleOk) {
   auto parser = pcomb::Int();
   TestParserSuccess(input, parser, 7, 1, CheckEmpty());
 }
+
+class IntParserTest : public ::testing::TestWithParam<int> { };
+
+TEST_P(IntParserTest, DISABLED_Success) {
+  auto param = GetParam();
+  auto input = std::to_string(param);
+  auto parser = pcomb::Int();
+  auto expected = param;
+  TestParserSuccess(input, parser, expected, input.size(), CheckEmpty());
+}
+
+INSTANTIATE_TEST_CASE_P(
+  NumberParserTest,
+  IntParserTest,
+  ::testing::Values(1, 22, 3, 41, 52, 6, 7, 8, 9));

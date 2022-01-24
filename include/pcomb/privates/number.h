@@ -2,6 +2,8 @@
 #define PCOMB_PRIVATES_NUMBER_H_
 
 #include <functional>
+#include <list>
+#include <numeric>
 #include <string>
 #include <utility>
 
@@ -10,6 +12,13 @@
 #include "pcomb/result.h"
 #include "pcomb/stream.h"
 #include "pcomb/trace.h"
+
+#include "pcomb/adaptive.h"
+#include "pcomb/alternative.h"
+#include "pcomb/many.h"
+#include "pcomb/optional.h"
+#include "pcomb/predicate.h"
+#include "pcomb/sequence.h"
 
 #include "pcomb/privates/common.h"
 #include "pcomb/privates/digit.h"
@@ -56,21 +65,30 @@ class NumberParser : public Parser<C, V> {
   struct InnerNumberParser<int, Dummy> {
     static ResultType parse(const TraceBuilderType& trace_builder,
                             StreamType* stream) {
-      auto result = base_parser()->parse(stream);
+      auto result = parser()->parse(stream);
       if (!result.success()) {
         return ResultType(trace_builder({std::move(result).get_trace()}));
       }
 
       size_t consumed_number = result.get_consumed_number();
-      return ResultType(consumed_number, std::move(result).get_value() - '0');
+      return ResultType(consumed_number, std::move(result).get_value());
     }
 
     static std::string to_string_without_name() {
-      return "Number(int) " + wrapped(base_parser());
+      return "Number(int)";  //  + wrapped(parser());
     }
+
    private:
-    static auto base_parser() {
-      return make<DigitParser<CharType>>();
+    static auto parser() {
+      return Adapted(
+          Seq(WithDefault(Any(Char('+'), Char('-')), '+'), Some(Digit())),
+          [](const char sign, const std::list<char>& digits) {
+            int v = std::reduce(digits.cbegin(), digits.cend(), 0,
+                                [](int acc, char ch) {
+                                  return 10 * acc + (ch - '0');
+                                });
+            return (sign == '-') ? -v : v;
+          });
     }
   };
 };

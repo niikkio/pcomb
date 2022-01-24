@@ -11,6 +11,7 @@
 #include "pcomb/lazy.h"
 #include "pcomb/lexeme.h"
 #include "pcomb/messages.h"
+#include "pcomb/number.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
 #include "pcomb/skipped.h"
@@ -38,21 +39,16 @@ class LazyParserTest : public ::testing::Test {
     using ResultType = pcomb::Result<ValueType>;
     using StreamType = pcomb::IStream<CharType>;
 
-    auto Int() const {
-      using pcomb::Adapted, pcomb::Digit;
-      return Adapted(Digit(), &char2int);
-    }
-
     auto E1() const {
       using pcomb::Adapted;
-      return Adapted(Int(), &int2tree);
+      return Adapted(pcomb::Int(), &int2tree);
     }
 
     auto E2() const {
       using pcomb::Adapted, pcomb::Seq, pcomb::Skip, pcomb::Lazy, pcomb::Char;
-      return Adapted(Seq(Skip(Char('(')), Lazy(this), Skip(Char(')')),
-                         Skip(Char('<')), Int(),      Skip(Char('>')),
-                         Skip(Char('(')), Lazy(this), Skip(Char(')'))),
+      return Adapted(Seq(Skip(Char('(')), Lazy(this),   Skip(Char(')')),
+                         Skip(Char('<')), pcomb::Int(), Skip(Char('>')),
+                         Skip(Char('(')), Lazy(this),   Skip(Char(')'))),
                      &seq2tree);
     }
 

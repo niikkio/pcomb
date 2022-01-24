@@ -6,7 +6,7 @@
 
 class NumberParserTest : public ::testing::Test { };
 
-TEST_F(NumberParserTest, DISABLED_Name1) {
+TEST_F(NumberParserTest, Name1) {
   auto parser = pcomb::Int();
   TestParserName(parser, "Int <Number(int)>");
 }
@@ -29,17 +29,17 @@ TEST_F(NumberParserTest, SimpleOk) {
   TestParserSuccess(input, parser, 7, 1, CheckEmpty());
 }
 
-class IntParserTest : public ::testing::TestWithParam<int> { };
+class IntParserTest : public ::testing::TestWithParam<std::string> { };
 
-TEST_P(IntParserTest, DISABLED_Success) {
-  auto param = GetParam();
-  auto input = std::to_string(param);
+TEST_P(IntParserTest, Success) {
+  auto input = GetParam();
   auto parser = pcomb::Int();
-  auto expected = param;
+  auto expected = std::stoi(input);
   TestParserSuccess(input, parser, expected, input.size(), CheckEmpty());
 }
 
 INSTANTIATE_TEST_CASE_P(
   NumberParserTest,
   IntParserTest,
-  ::testing::Values(1, 22, 3, 41, 52, 6, 7, 8, 9));
+  ::testing::Values("1", "5", "32", "769", "0", "000", "01",
+                    "+123", "+0", "+5", "-123", "-0", "-7"));

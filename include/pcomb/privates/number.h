@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -19,6 +20,7 @@
 #include "pcomb/optional.h"
 #include "pcomb/predicate.h"
 #include "pcomb/sequence.h"
+#include "pcomb/skipped.h"
 
 #include "pcomb/privates/common.h"
 #include "pcomb/privates/digit.h"
@@ -88,6 +90,81 @@ class NumberParser : public Parser<C, V> {
                                   return 10 * acc + (ch - '0');
                                 });
             return (sign == '-') ? -v : v;
+          });
+    }
+  };
+
+  template <bool Dummy>
+  struct InnerNumberParser<uint64_t, Dummy> {
+    static ResultType parse(const TraceBuilderType& trace_builder,
+                            StreamType* stream) {
+      auto result = parser()->parse(stream);
+      if (!result.success()) {
+        return ResultType(trace_builder({std::move(result).get_trace()}));
+      }
+
+      size_t consumed_number = result.get_consumed_number();
+      return ResultType(consumed_number, std::move(result).get_value());
+    }
+
+    static std::string to_string_without_name() {
+      return "Number(unsigned long)";  //  + wrapped(parser());
+    }
+
+   private:
+    static auto parser() {
+      return Adapted(
+          Some(Digit()),
+          [](const std::list<char>& digits) {
+            return std::reduce(
+                digits.cbegin(), digits.cend(), 0,
+                [](uint64_t acc, char ch) {
+                  return 10 * acc + static_cast<uint64_t>(ch - '0');
+                });
+          });
+    }
+  };
+
+  template <bool Dummy>
+  struct InnerNumberParser<double, Dummy> {
+    static ResultType parse(const TraceBuilderType& trace_builder,
+                            StreamType* stream) {
+      auto result = parser()->parse(stream);
+      if (!result.success()) {
+        return ResultType(trace_builder({std::move(result).get_trace()}));
+      }
+
+      size_t consumed_number = result.get_consumed_number();
+      return ResultType(consumed_number, std::move(result).get_value());
+    }
+
+    static std::string to_string_without_name() {
+      return "Number(double)";  //  + wrapped(parser());
+    }
+
+   private:
+    static auto parser() {
+      return Adapted(
+          Seq(WithDefault(Any(Char('+'), Char('-')), '+'),
+              Some(Digit()),
+              Opt(Seq(Skip(Char('.')), Some(Digit())))),
+          [](const char sign, const std::list<char>& digits,
+             const std::optional<std::list<char>>& mantissa) {
+            double v = std::reduce(digits.cbegin(), digits.cend(), 0,
+                                   [](double acc, char ch) {
+                                     return 10 * acc + (ch - '0');
+                                  });
+
+
+            double m = 0;
+            if (mantissa.has_value()) {
+              m = std::reduce(
+                  mantissa.value().crbegin(), mantissa.value().crend(), 0.0,
+                  [](double acc, char ch) {
+                    return 0.1 * (acc + static_cast<double>(ch - '0'));
+                  });
+            }
+            return (sign == '-') ? -(v + m) : (v + m);
           });
     }
   };

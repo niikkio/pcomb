@@ -15,7 +15,7 @@ inline auto Int() {
 template <typename CharType = char>
 inline auto UInt() {
   return with_name(
-      make<privates::NumberParser<CharType, unsigned int>>(), "UInt");
+      make<privates::NumberParser<CharType, uint64_t>>(), "UInt");
 }
 
 template <typename CharType = char>

@@ -8,6 +8,7 @@
 
 #include "pcomb/adaptive.h"
 #include "pcomb/alternative.h"
+#include "pcomb/exact.h"
 #include "pcomb/lazy.h"
 #include "pcomb/lexeme.h"
 #include "pcomb/messages.h"
@@ -102,9 +103,18 @@ TEST_F(LazyParserTest, Tree) {
   EXPECT_THAT(tree->R->v, 5);
 }
 
-TEST_F(LazyParserTest, DISABLED_TreeFail1) {
-  auto input = "((1)<2>3))<4>(5)";
-  auto parser = pcomb::make<TreeParser>();
+TEST_F(LazyParserTest, TreeFail1) {
+  auto good_input = std::string("((1)<2>(3))<4>(5)");
+  auto parser = pcomb::Exact(pcomb::make<TreeParser>());
 
-  TestParserFail(input, parser, "OK");
+
+  for (size_t i = 0; i <= good_input.size(); ++i) {
+    auto input = std::string(good_input).insert(i, 1, 'x');
+    TestParserFail(input, parser);
+  }
+
+  for (size_t i = 0; i < good_input.size(); ++i) {
+    auto input = std::string(good_input).erase(i, 1);
+    TestParserFail(input, parser);
+  }
 }
